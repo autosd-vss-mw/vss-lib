@@ -96,12 +96,12 @@ class VehicleSignalInterface:
         """
         Attach electronics vendors to the vendor model.
         """
-        if not self.electronics:
+        if not self.attached_electronics:
             return
 
         from vss_lib.vendor.electronics import bosch, renesas
 
-        for electronic in self.electronics:
+        for electronic in self.attached_electronics:
             try:
                 if electronic.lower() == "bosch":
                     self.vendor_model.attach_electronic(bosch.BoschModel())

@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from vspec.model import Model
+from vss_lib.vspec.model import Model
 
 
 def load_vspec_file(vspec_file):

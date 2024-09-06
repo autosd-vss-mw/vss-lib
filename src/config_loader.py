@@ -31,8 +31,8 @@ def get_vspec_file(vendor):
     vendor_section = f"vehicle_{vendor}"
     
     if vendor_section in config:
-        print("==========DOUGLAS=============")
+        print("==========DEBUG=============")
         print(config[vendor_section].get('vspec_file', None))
-        print("==========DOUGLAS=============")
+        print("==========DEBUG=============")
         return config[vendor_section].get('vspec_file', None)
     return None

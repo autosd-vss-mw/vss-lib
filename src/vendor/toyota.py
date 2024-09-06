@@ -27,7 +27,7 @@ class ToyotaModel(BaseModel):
             preference (Optional[dict]): User preferences that may influence signal generation.
             attached_electronics (Optional[list]): List of attached electronics, such as ECUs.
         """
-        vendor = "volvo"  # Set the required vendor argument
+        vendor = "toyota"  # Set the required vendor argument
         vspec_file = get_vspec_file(vendor)
         
         if vspec_file:
