@@ -1,0 +1,35 @@
+# Honda Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 240
+
+  EngineTemperature:
+    datatype: float
+    unit: Celsius
+    min: 60
+    max: 120
+
+  OilPressure:
+    datatype: float
+    unit: psi
+    min: 20
+    max: 80
+
+  # Attached electronics (Renesas)
+  Electronics:
+    Renesas:
+      BatteryStatus:
+        datatype: float
+        unit: percent
+        min: 0
+        max: 100
+
+      GPSAccuracy:
+        datatype: float
+        unit: meters
+        min: 0
+        max: 50

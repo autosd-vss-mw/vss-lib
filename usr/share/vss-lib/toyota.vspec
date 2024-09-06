@@ -1,0 +1,30 @@
+# Toyota Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 240
+
+  TirePressure:
+    datatype: float
+    unit: bar
+    min: 1.5
+    max: 3.5
+
+  # Attached electronics (Bosch and Renesas)
+  Electronics:
+    Bosch:
+      TemperatureSensor:
+        datatype: float
+        unit: Celsius
+        min: -40
+        max: 150
+
+    Renesas:
+      BatteryLevel:
+        datatype: float
+        unit: percent
+        min: 0
+        max: 100

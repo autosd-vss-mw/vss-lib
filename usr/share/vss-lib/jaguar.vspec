@@ -1,0 +1,35 @@
+# Jaguar Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 300
+
+  TransmissionTemperature:
+    datatype: float
+    unit: Celsius
+    min: 50
+    max: 150
+
+  FuelFlowRate:
+    datatype: float
+    unit: liters/hour
+    min: 1
+    max: 20
+
+  # Attached electronics (Bosch)
+  Electronics:
+    Bosch:
+      BlindSpotMonitoring:
+        datatype: bool
+        unit: null
+        min: false
+        max: true
+
+      RainSensorStatus:
+        datatype: bool
+        unit: null
+        min: false
+        max: true

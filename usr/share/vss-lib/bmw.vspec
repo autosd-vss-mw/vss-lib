@@ -1,0 +1,35 @@
+# BMW Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 260
+
+  FuelLevel:
+    datatype: float
+    unit: percent
+    min: 0
+    max: 100
+
+  BatteryVoltage:
+    datatype: float
+    unit: volts
+    min: 10
+    max: 15
+
+  # Attached electronics (Bosch)
+  Electronics:
+    Bosch:
+      BrakePadWear:
+        datatype: float
+        unit: mm
+        min: 0
+        max: 20
+
+      AmbientTemperature:
+        datatype: float
+        unit: Celsius
+        min: -40
+        max: 80

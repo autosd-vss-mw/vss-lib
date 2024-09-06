@@ -1,0 +1,36 @@
+# Mercedes Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 280
+
+  TirePressure:
+    datatype: float
+    unit: bar
+    min: 1.8
+    max: 3.2
+
+  HeadlightIntensity:
+    datatype: float
+    unit: percent
+    min: 0
+    max: 100
+
+  # Attached electronics (Bosch, Renesas)
+  Electronics:
+    Bosch:
+      DoorLockStatus:
+        datatype: bool
+        unit: null
+        min: false
+        max: true
+
+    Renesas:
+      CameraResolution:
+        datatype: string
+        unit: null
+        min: "720p"
+        max: "1080p"

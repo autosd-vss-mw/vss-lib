@@ -1,0 +1,12 @@
+# TODO: In the future have an official image from the repo
+# /etc/containers/systemd/qm-container/toyota.container
+[Container]
+Image="quay.io/podman/stable" # using podman stable for nested containers
+Description=Toyota Vendor Container
+Binds=/run/dbus/system_bus_socket:/run/dbus/system_bus_socket  # Connect to host's D-Bus
+Binds=/path/to/host/vss_dbus_client.py:/usr/bin/vss_dbus_client.py  # Bind client script from host to container
+
+[Service]
+ExecStart=/bin/bash -c "dnf install -y python3 dbus && python3 /usr/bin/vss_dbus_client.py --vendor toyota"
+Restart=always
+

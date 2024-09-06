@@ -1,0 +1,36 @@
+# Ford Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 240
+
+  FuelLevel:
+    datatype: float
+    unit: percent
+    min: 0
+    max: 100
+
+  EngineTorque:
+    datatype: float
+    unit: Nm
+    min: 100
+    max: 400
+
+  # Attached electronics (Bosch, Renesas)
+  Electronics:
+    Bosch:
+      CollisionWarningStatus:
+        datatype: bool
+        unit: null
+        min: false
+        max: true
+
+    Renesas:
+      LaneKeepAssistStatus:
+        datatype: bool
+        unit: null
+        min: false
+        max: true

@@ -1,0 +1,36 @@
+# Volvo Vehicle Signals Specification
+
+Vehicle:
+  Speed:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 250
+
+  EngineRPM:
+    datatype: float
+    unit: RPM
+    min: 600
+    max: 8000
+
+  BrakeFluidLevel:
+    datatype: float
+    unit: percent
+    min: 0
+    max: 100
+
+  # Attached electronics (Bosch, Renesas)
+  Electronics:
+    Bosch:
+      ParkingSensorStatus:
+        datatype: bool
+        unit: null
+        min: false
+        max: true
+
+    Renesas:
+      NavigationAccuracy:
+        datatype: float
+        unit: meters
+        min: 0
+        max: 5
