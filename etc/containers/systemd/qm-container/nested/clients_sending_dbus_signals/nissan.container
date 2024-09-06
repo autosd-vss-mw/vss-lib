@@ -1,5 +1,5 @@
 # TODO: In the future have an official image from the repo
-# /etc/containers/systemd/qm-container/honda.container
+# /etc/containers/systemd/qm-container/nissan.container
 [Container]
 Image="quay.io/podman/stable" # using podman stable for nested containers
 Description=Honda Vendor Container
@@ -7,6 +7,6 @@ Binds=/run/dbus/system_bus_socket:/run/dbus/system_bus_socket  # Connect to host
 Binds=/path/to/host/vss_dbus_client.py:/usr/bin/vss_dbus_client.py  # Bind client script from host to container
 
 [Service]
-ExecStart=/bin/bash -c "dnf install -y python3 dbus && python3 /usr/bin/vss_dbus_client.py --vendor honda"
+ExecStart=/bin/bash -c "dnf install -y python3 dbus && python3 /usr/bin/vss_dbus_client.py --vendor nissan"
 Restart=always
 
