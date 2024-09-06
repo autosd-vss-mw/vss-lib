@@ -18,24 +18,43 @@ class VehicleSignalInterface:
 
     Attributes:
         vendor (str): The vendor for which the interface is created.
+        vspec_file (Optional[str]): Path to the VSS file for the vendor, default signals used if not provided.
+        preference (Optional[dict]): User preferences for signal generation (e.g., ASIL, QM).
         vendor_model (object): The specific vendor's model handler.
-        electronics (list): List of attached electronics vendors.
+        attached_electronics (list): List of attached electronics vendors.
     """
-
-    def __init__(self, vendor, electronics=None):
+    def __init__(self, vendor, vspec_file=None, preference=None, attached_electronics=None):
         """
-        Initializes the VehicleSignalInterface based on the provided vendor and electronics.
+        Initialize the VehicleSignalInterface.
 
         Args:
-            vendor (str): The vehicle vendor (e.g., 'toyota', 'bmw').
-            electronics (list, optional): List of electronics vendors to attach (e.g., ['bosch', 'renesas']).
+            vendor (str): The vendor name for which the vehicle signal interface is being created.
+                          This is typically a manufacturer or brand identifier (e.g., 'toyota', 'bmw').
+                          It is required to initialize the interface correctly.
+            
+            vspec_file (Optional[str]): The path to the VSS (Vehicle Signal Specification) file associated with the vendor.
+                                        This file defines the structure of vehicle signals for the specified vendor.
+                                        If not provided, default signal definitions may be used.
+            
+            preference (Optional[dict]): A dictionary containing user preferences that may influence the behavior
+                                         of signal generation or data processing. For example, preferences for ASIL 
+                                         (Automotive Safety Integrity Level) or QM (Quality Management) signal generation.
+                                         If not provided, default preferences may be applied.
 
+            attached_electronics (Optional[list]): A list of electronics that are attached to the vehicle. 
+                                                   This could include components such as ECUs (Electronic Control Units)
+                                                   or other embedded systems. If not provided, it may be assumed 
+                                                   that no electronics are attached.
+        
         Raises:
-            ValueError: If the vendor is not supported.
+            ValueError: If `vendor` is not provided, as it is required to initialize the interface.
         """
+        self.vspec_file = vspec_file
+        self.preference = preference
+        self.attached_electronics = attached_electronics or []
+
         self.vendor = vendor.lower()
         self.vendor_model = None
-        self.electronics = electronics or []
 
         # Assign the appropriate vendor model based on the input
         self._initialize_vendor_model()

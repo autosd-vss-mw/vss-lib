@@ -13,19 +13,25 @@
 from vss_lib.base_model import BaseModel
 from vss_lib.config_loader import get_vspec_file
 
-
 class BMWModel(BaseModel):
     """
     BMW-specific signal model. This class extends the BaseModel to include
     signals specific to BMW vehicles.
     """
 
-    def __init__(self):
+    def __init__(self, preference=None, attached_electronics=None):
         """
         Initialize the BMW model by loading the VSS file path from the configuration.
+        
+        Args:
+            preference (Optional[dict]): User preferences that may influence signal generation.
+            attached_electronics (Optional[list]): List of attached electronics, such as ECUs.
         """
-        vspec_file = get_vspec_file("bmw")
+        vendor = "bmw"  # Set the required vendor argument
+        vspec_file = get_vspec_file(vendor)
+        
         if vspec_file:
-            super().__init__(vspec_file)
+            # Pass vendor, vspec_file, preference, and attached_electronics to BaseModel's constructor
+            super().__init__(vendor, vspec_file, preference, attached_electronics)
         else:
             raise ValueError("BMW VSS file path not found in the configuration.")
