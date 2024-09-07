@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import toml
 import yaml
 
@@ -18,25 +19,45 @@ CONFIG_PATH = '/etc/vss-lib/vss.config'
 
 def get_vspec_file(vendor):
     """
-    Load and parse the VSS YAML file for the given vendor.
+    Get the VSS file path for the given vendor or electronics component.
 
     Args:
-        vendor (str): The vendor name (e.g., 'toyota', 'bmw').
+        vendor (str): The name of the vendor or electronics component.
 
     Returns:
-        dict: Parsed VSS YAML data.
+        str: The path to the VSS file, or None if not found.
     """
-    # Load the configuration file (still using toml or configparser to get paths)
-    config = toml.load(CONFIG_PATH)
-    
-    vendor_section = f"vehicle_{vendor}"
+    config_path = '/etc/vss-lib/vss.config'
+    vspec_file = None
 
-    if vendor_section in config:
-        vspec_file_path = config[vendor_section].get('vspec_file', None)
-        if vspec_file_path:
-            return load_vspec_file(vspec_file_path)
-    return None
+    # Load the TOML configuration file
+    try:
+        with open(config_path, 'r') as config_file:
+            config = toml.load(config_file)
+    except FileNotFoundError:
+        print(f"Configuration file not found: {config_path}")
+        return None
+    except toml.TomlDecodeError as e:
+        print(f"Error decoding TOML file: {e}")
+        return None
 
+    # First, check for electronics section in the config file
+    electronics_section = f"electronics_{vendor.lower()}"
+    vehicle_section = f"vehicle_{vendor.lower()}"
+
+    if electronics_section in config:
+        vspec_file = config[electronics_section].get("vspec_file")
+    elif vehicle_section in config:
+        vspec_file = config[vehicle_section].get("vspec_file")
+    else:
+        print(f"Configuration section not found for vendor: {vendor}")
+        return None
+
+    if vspec_file and os.path.exists(vspec_file):
+        return vspec_file
+    else:
+        print(f"VSS file not found for vendor: {vendor}")
+        return None
 
 def load_vspec_file(vspec_file_path):
     """

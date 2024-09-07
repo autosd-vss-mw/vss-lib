@@ -84,8 +84,8 @@ class VehicleSignalService:
 
     def load_available_signals(self):
         """
-        Load all available signals from the VSS model.
-
+        Load all available signals from the VSS model, including nested signals like Electronics.
+    
         Returns:
            list: A list of all signal names available in the VSS model.
         """
@@ -93,10 +93,19 @@ class VehicleSignalService:
             logger.warning("VehicleSignalInterface not initialized")
             return []
 
-        # Assuming self.vsi.model.signals is a dictionary where keys are signal names
-        available_signals = list(self.vsi.model.signals.keys())
+        available_signals = []
+
+        def recursively_load_signals(signal_dict, prefix=""):
+            for signal_name, signal_data in signal_dict.items():
+                if isinstance(signal_data, dict):  # Check if it's a nested signal
+                    recursively_load_signals(signal_data, prefix + signal_name + ".")
+                else:
+                    available_signals.append(prefix + signal_name)
+
+        recursively_load_signals(self.vsi.model.signals)
         logger.info(f"Loaded available signals: {available_signals}")
         return available_signals
+
 
     def GetRandomSignal(self):
         """
@@ -107,7 +116,6 @@ class VehicleSignalService:
             logger.warning("VehicleSignalInterface not initialized")
             return None, None
 
-        # Load available signals from the VSS model
         available_signals = self.load_available_signals()
 
         if not available_signals:
@@ -124,9 +132,9 @@ class VehicleSignalService:
             min_value = signal_details.get('min')
             max_value = signal_details.get('max')
 
-            # Ensure min and max values are not None
+            # Skip signals that don't have min/max values
             if min_value is None or max_value is None:
-                logger.error(f"Signal {signal_name} is missing min or max value. Cannot generate random value.")
+                logger.error(f"Signal {signal_name} is missing min or max value. Skipping signal.")
                 return None, None
 
             try:

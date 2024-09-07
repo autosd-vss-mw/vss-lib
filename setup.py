@@ -25,6 +25,7 @@ SHARE_DIR = '/usr/share/vss-lib/'
 DBUS_DIR = '/usr/lib/vss-lib/dbus/'
 LOG_DIR = '/var/log/vss-lib/'
 DBUS_CONF_DIR = '/etc/dbus-1/system.d/'
+ELECTRONICS_DIR = os.path.join(SHARE_DIR, 'electronics/')
 LATEST_PYTHON_SITE_PACKAGES = sysconfig.get_paths()['purelib']
 
 # Array of individual Python files to copy to LATEST_PYTHON_SITE_PACKAGES
@@ -71,26 +72,15 @@ class CustomInstallCommand(install):
         # Run the standard installation process
         install.run(self)
 
-        # Ensure systemd directory exists
+        # Ensure systemd, etc, share, dbus, and log directories exist
         os.makedirs(SYSTEMD_DIR, exist_ok=True)
-        print(f"Ensured {SYSTEMD_DIR} exists")
-
-        # Ensure etc directory exists
         os.makedirs(ETC_DIR, exist_ok=True)
-        print(f"Ensured {ETC_DIR} exists")
-
-        # Ensure share directory exists
         os.makedirs(SHARE_DIR, exist_ok=True)
-        print(f"Ensured {SHARE_DIR} exists")
-
-        # Ensure dbus directory exists
         os.makedirs(DBUS_DIR, exist_ok=True)
-        print(f"Ensured {DBUS_DIR} exists")
-
-        # Ensure log directory exists with correct permissions
         os.makedirs(LOG_DIR, exist_ok=True)
-        os.chmod(LOG_DIR, 0o755)
-        print(f"Ensured {LOG_DIR} exists with correct permissions")
+        os.makedirs(ELECTRONICS_DIR, exist_ok=True)
+
+        print(f"Ensured necessary directories exist")
 
         # Define the VSS path
         vspec_path = '/usr/share/vss-lib/'
@@ -100,27 +90,33 @@ class CustomInstallCommand(install):
         config_file_dst = os.path.join(ETC_DIR, 'vss.config')
         create_new_config_file(config_file_src, config_file_dst, vspec_path)
 
-        # Backup and copy the logging configuration file to /etc/vss-lib
-        logging_file = os.path.join(ETC_DIR, 'logging.conf')
-        shutil.copy('etc/vss-lib/logging.conf', logging_file)
-        print(f"Copied etc/vss-lib/logging.conf to {ETC_DIR}")
+        # Copy the logging configuration file to /etc/vss-lib
+        shutil.copy('etc/vss-lib/logging.conf', os.path.join(ETC_DIR, 'logging.conf'))
+        print(f"Copied logging configuration to {ETC_DIR}")
 
-        # Copy the .vspec files to /usr/share/vss-lib
+        # Copy the .vspec files for vehicles to /usr/share/vss-lib
         vspec_files = ['bmw.vspec', 'ford.vspec', 'honda.vspec', 'jaguar.vspec', 'mercedes.vspec', 'toyota.vspec', 'volvo.vspec']
         for vspec in vspec_files:
             shutil.copy(f'usr/share/vss-lib/{vspec}', SHARE_DIR)
-            print(f"Copied usr/share/vss-lib/{vspec} to {SHARE_DIR}")
+            print(f"Copied {vspec} to {SHARE_DIR}")
 
-        # Backup and copy the dbus service file to /usr/lib/vss-lib/dbus
-        dbus_service_file = os.path.join(DBUS_DIR, 'vss_dbus_service.py')
-        shutil.copy('src/dbus/vss_dbus_service.py', dbus_service_file)
-        print(f"Copied src/dbus/vss_dbus_service.py to {DBUS_DIR}")
+        # Copy the dbus service file to /usr/lib/vss-lib/dbus
+        shutil.copy('src/dbus/vss_dbus_service.py', os.path.join(DBUS_DIR, 'vss_dbus_service.py'))
+        print(f"Copied dbus service file to {DBUS_DIR}")
 
-        # Backup and copy the D-Bus configuration file to /etc/dbus-1/system.d
-        dbus_conf_src = 'etc/dbus-1/system.d/vss-dbus.conf'
-        dbus_conf_dst = os.path.join(DBUS_CONF_DIR, 'vss-dbus.conf')
-        shutil.copy(dbus_conf_src, dbus_conf_dst)
-        print(f"Copied {dbus_conf_src} to {dbus_conf_dst}")
+        # Copy the D-Bus configuration file to /etc/dbus-1/system.d
+        shutil.copy('etc/dbus-1/system.d/vss-dbus.conf', os.path.join(DBUS_CONF_DIR, 'vss-dbus.conf'))
+        print(f"Copied D-Bus configuration to {DBUS_CONF_DIR}")
+
+        # Copy electronics .vspec files to /usr/share/vss-lib/electronics/
+        electronics_source_dir = 'src/electronics/'
+        if os.path.exists(electronics_source_dir):
+            for file_name in os.listdir(electronics_source_dir):
+                if file_name.endswith('.vspec'):
+                    shutil.copy(os.path.join(electronics_source_dir, file_name), ELECTRONICS_DIR)
+                    print(f"Copied {file_name} to {ELECTRONICS_DIR}")
+        else:
+            print(f"Directory {electronics_source_dir} does not exist, skipping electronics files...")
 
         # Define the target directory for Python files using sysconfig's purelib path
         target_dir = os.path.join(LATEST_PYTHON_SITE_PACKAGES, "vss_lib")
@@ -129,11 +125,10 @@ class CustomInstallCommand(install):
         os.makedirs(target_dir, exist_ok=True)
         print(f"Created {target_dir}")
 
-        print(f"Installing Python files in {target_dir}")
         # Copy individual Python files to LATEST_PYTHON_SITE_PACKAGES
         for py_file in python_files:
             shutil.copy(f'src/{py_file}', target_dir)
-            print(f"Copied src/{py_file} to {target_dir}")
+            print(f"Copied {py_file} to {target_dir}")
 
         # Recursively copy directories and their subdirectories to LATEST_PYTHON_SITE_PACKAGES
         for directory in directories_to_copy:

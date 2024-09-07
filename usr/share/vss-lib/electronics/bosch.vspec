@@ -1,0 +1,72 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+Electronics.Bosch:
+  ParkingSensorStatus:
+    datatype: bool
+    unit: null
+    min: false
+    max: true
+
+  BrakePressureSensor:
+    datatype: float
+    unit: bar
+    min: 0
+    max: 100
+
+  TemperatureSensor:
+    datatype: float
+    unit: celsius
+    min: -40
+    max: 125
+
+  FuelLevelSensor:
+    datatype: float
+    unit: percent
+    min: 0
+    max: 100
+
+  BatteryVoltageSensor:
+    datatype: float
+    unit: volts
+    min: 0
+    max: 16
+
+  SteeringAngleSensor:
+    datatype: float
+    unit: degrees
+    min: -720
+    max: 720
+
+  WheelSpeedSensorFrontLeft:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 300
+
+  WheelSpeedSensorFrontRight:
+    datatype: float
+    unit: km/h
+    min: 0
+    max: 300
+
+  AirbagDeploymentSensor:
+    datatype: bool
+    unit: null
+    min: false
+    max: true
+
+  TirePressureSensor:
+    datatype: float
+    unit: bar
+    min: 0
+    max: 5

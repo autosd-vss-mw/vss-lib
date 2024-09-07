@@ -12,8 +12,9 @@
 # limitations under the License.
 import os
 from vss_lib.vss_logging import logger
-from vss_lib.vspec.model import Model  # Correct import for Model
-from vss_lib.vendor_interface import VehicleSignalInterface  # Ensure this is the correct import
+from vss_lib.vspec.model import Model
+from vss_lib.vendor_interface import VehicleSignalInterface
+from vss_lib.vspec_parser import load_vspec_file
 
 class BaseModel:
     """
@@ -37,6 +38,8 @@ class BaseModel:
         self.vspec_file = vspec_file
         self.model = Model.from_file(self.vspec_file)  # Load the VSS model using Model class
         self.attached_electronics = []
+
+        self.vspec_data = load_vspec_file(vspec_file)
 
         if self.model is None:
             raise AttributeError(f"Failed to load model from {vspec_file}")
@@ -82,27 +85,72 @@ class BaseModel:
 
     def get_signal_details(self, signal_name):
         """
-        Retrieve details of a specific signal.
+        Get details of a signal by name.
 
         Args:
-            signal_name (str): The name of the signal to retrieve.
+            signal_name (str): The name of the signal to retrieve details for.
 
         Returns:
             dict: A dictionary containing signal details such as datatype,
                   unit, min, and max.
         """
-        signal = self.model.find(f"Vehicle.{signal_name}")
-        if signal:
-            logger.info(f'Signal "{signal_name}" found with details.')
-            return {
-                "name": signal_name,
-                "datatype": signal.get('datatype'),
-                "unit": signal.get('unit'),
-                "min": signal.get('min'),
-                "max": signal.get('max'),
-            }
-        logger.warning(f'Signal "{signal_name}" not found.')
-        return None
+        keys = signal_name.split(".")
+        signal = self.vspec_data  # This is the loaded VSS model
+
+        for key in keys:
+            if isinstance(signal, dict):
+                signal = signal.get(key)
+            else:
+                logger.error(f"Expected dictionary for signal path '{signal_name}', but got: {type(signal)}")
+                return None
+
+            if signal is None:
+                logger.warning(f"Signal path '{signal_name}' not found.")
+                return None
+
+        # Ensure the signal is a dictionary and not an int or other type
+        if not isinstance(signal, dict):
+            logger.error(f"Expected signal details for '{signal_name}', but got: {type(signal)}")
+            return None
+
+        return {
+            "datatype": signal.get('datatype'),
+            "unit": signal.get('unit'),
+            "min": signal.get('min'),
+            "max": signal.get('max')
+        }
+ 
+    def get_signal_details(self, signal_name):
+        """
+        Get details of a signal by name.
+
+        Args:
+            signal_name (str): The name of the signal to retrieve details for.
+
+        Returns:
+            dict: A dictionary containing signal details such as datatype,
+                  unit, min, and max.
+        """
+        keys = signal_name.split(".")
+        signal = self.vspec_data  # Assume this is the loaded VSS model
+
+        for key in keys:
+            signal = signal.get(key)
+            if signal is None:
+                logger.warning(f"Signal path '{signal_name}' not found.")
+                return None
+
+        # Ensure the signal is a dictionary and not an int
+        if not isinstance(signal, dict):
+            logger.error(f"Expected signal details for '{signal_name}', but got: {signal}")
+            return None
+
+        return {
+            "datatype": signal.get('datatype'),
+            "unit": signal.get('unit'),
+            "min": signal.get('min'),
+            "max": signal.get('max')
+        }
 
     def validate_signal(self, signal_name, value):
         """
