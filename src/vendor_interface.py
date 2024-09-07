@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from vss_lib.vspec.model import Model
 from vss_lib.vss_logging import logger
 
 class VehicleSignalInterface:
@@ -29,74 +30,86 @@ class VehicleSignalInterface:
 
         Args:
             vendor (str): The vendor name for which the vehicle signal interface is being created.
-                          This is typically a manufacturer or brand identifier (e.g., 'toyota', 'bmw').
-                          It is required to initialize the interface correctly.
-            
-            vspec_file (Optional[str]): The path to the VSS (Vehicle Signal Specification) file associated with the vendor.
-                                        This file defines the structure of vehicle signals for the specified vendor.
-                                        If not provided, default signal definitions may be used.
-            
-            preference (Optional[dict]): A dictionary containing user preferences that may influence the behavior
-                                         of signal generation or data processing. For example, preferences for ASIL 
-                                         (Automotive Safety Integrity Level) or QM (Quality Management) signal generation.
-                                         If not provided, default preferences may be applied.
+            vspec_file (Optional[str]): The path to the VSS file associated with the vendor.
+            preference (Optional[dict]): Preferences like ASIL, QM for signal generation.
+            attached_electronics (Optional[list]): List of attached electronics vendors.
 
-            attached_electronics (Optional[list]): A list of electronics that are attached to the vehicle. 
-                                                   This could include components such as ECUs (Electronic Control Units)
-                                                   or other embedded systems. If not provided, it may be assumed 
-                                                   that no electronics are attached.
-        
         Raises:
-            ValueError: If `vendor` is not provided, as it is required to initialize the interface.
+            ValueError: If vendor or other critical parameters are missing or invalid.
         """
+        logger.info(f"Initializing VehicleSignalInterface for vendor={vendor}, vspec_file={vspec_file}")
+        
         self.vspec_file = vspec_file
         self.preference = preference
         self.attached_electronics = attached_electronics or []
 
         self.vendor = vendor.lower()
         self.vendor_model = None
+        self.model = None
+
+        # Initialize the model using the vspec_file if provided
+        if self.vspec_file:
+            logger.info(f"Loading VSS file for vendor {self.vendor} from {self.vspec_file}")
+            self.model = Model.from_file(self.vspec_file)
+            if self.model is None:
+                logger.error(f"Failed to load VSS file for vendor {self.vendor}. Path: {self.vspec_file}")
+                raise ValueError(f"Invalid or missing VSS file for vendor {self.vendor}.")
+        else:
+            logger.warning(f"No VSS file provided for vendor {self.vendor}. Default signals may not be available.")
 
         # Assign the appropriate vendor model based on the input
         self._initialize_vendor_model()
 
+        # Check if vendor_model initialized properly
+        if not self.vendor_model:
+            logger.error(f"Failed to initialize vendor model for vendor {self.vendor}.")
+            raise ValueError(f"Vendor model for {self.vendor} could not be initialized.")
+
         # Attach electronics vendors if provided
         self._attach_electronics()
 
-        logger.info(f"VehicleSignalInterface initialized for vendor {self.vendor}")
+        logger.info(f"VehicleSignalInterface initialized successfully for vendor {self.vendor}")
 
     def _initialize_vendor_model(self):
         """
         Initialize the vendor model based on the vendor provided.
         """
-        if self.vendor == "toyota":
-            from vss_lib.vendor.toyota import ToyotaModel
-            self.vendor_model = ToyotaModel()
-        elif self.vendor == "bmw":
-            from vss_lib.vendor.bmw import BMWModel
-            self.vendor_model = BMWModel()
-        elif self.vendor == "ford":
-            from vss_lib.vendor.ford import FordModel
-            self.vendor_model = FordModel()
-        elif self.vendor == "mercedes":
-            from vss_lib.vendor.mercedes import MercedesModel
-            self.vendor_model = MercedesModel()
-        elif self.vendor == "honda":
-            from vss_lib.vendor.honda import HondaModel
-            self.vendor_model = HondaModel()
-        elif self.vendor == "volvo":
-            from vss_lib.vendor.volvo import VolvoModel
-            self.vendor_model = VolvoModel()
-        elif self.vendor == "jaguar":
-            from vss_lib.vendor.jaguar import JaguarModel
-            self.vendor_model = JaguarModel()
-        else:
-            raise ValueError(f"Unsupported vendor: {self.vendor}")
+        try:
+            logger.info(f"Initializing vendor model for {self.vendor}")
+            if self.vendor == "toyota":
+                from vss_lib.vendor.toyota import ToyotaModel
+                self.vendor_model = ToyotaModel()
+            elif self.vendor == "bmw":
+                from vss_lib.vendor.bmw import BMWModel
+                self.vendor_model = BMWModel()
+            elif self.vendor == "ford":
+                from vss_lib.vendor.ford import FordModel
+                self.vendor_model = FordModel()
+            elif self.vendor == "mercedes":
+                from vss_lib.vendor.mercedes import MercedesModel
+                self.vendor_model = MercedesModel()
+            elif self.vendor == "honda":
+                from vss_lib.vendor.honda import HondaModel
+                self.vendor_model = HondaModel()
+            elif self.vendor == "volvo":
+                from vss_lib.vendor.volvo import VolvoModel
+                self.vendor_model = VolvoModel()
+            elif self.vendor == "jaguar":
+                from vss_lib.vendor.jaguar import JaguarModel
+                self.vendor_model = JaguarModel()
+            else:
+                logger.error(f"Unsupported vendor: {self.vendor}")
+                raise ValueError(f"Unsupported vendor: {self.vendor}")
+        except ImportError as e:
+            logger.error(f"Failed to import vendor model for {self.vendor}: {e}")
+            raise
 
     def _attach_electronics(self):
         """
         Attach electronics vendors to the vendor model.
         """
         if not self.attached_electronics:
+            logger.info("No electronics to attach.")
             return
 
         from vss_lib.vendor.electronics import bosch, renesas
@@ -105,8 +118,10 @@ class VehicleSignalInterface:
             try:
                 if electronic.lower() == "bosch":
                     self.vendor_model.attach_electronic(bosch.BoschModel())
+                    logger.info("Attached Bosch electronics.")
                 elif electronic.lower() == "renesas":
                     self.vendor_model.attach_electronic(renesas.RenesasModel())
+                    logger.info("Attached Renesas electronics.")
                 else:
                     logger.warning(f"Unsupported electronic vendor: {electronic}. Skipping.")
             except Exception as e:
@@ -123,6 +138,10 @@ class VehicleSignalInterface:
             dict: A dictionary containing signal details such as datatype,
                   unit, min, and max.
         """
+        if not self.vendor_model:
+            logger.error("Cannot get signal details: Vendor model is not initialized.")
+            return None
+
         return self.vendor_model.get_signal_details(signal_name)
 
     def validate_signal(self, signal_name, value):
@@ -136,4 +155,8 @@ class VehicleSignalInterface:
         Returns:
             bool: True if the value is within the signal's valid range, else False.
         """
+        if not self.vendor_model:
+            logger.error("Cannot validate signal: Vendor model is not initialized.")
+            return False
+
         return self.vendor_model.validate_signal(signal_name, value)

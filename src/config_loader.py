@@ -10,9 +10,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import configparser
+import toml
 
-CONFIG_PATH = '/etc/vss/vss.config'
+CONFIG_PATH = '/etc/vss-lib/vss.config'
 
 
 def get_vspec_file(vendor):
@@ -25,14 +25,13 @@ def get_vspec_file(vendor):
     Returns:
         str: Path to the VSS file.
     """
-    config = configparser.ConfigParser()
-    config.read(CONFIG_PATH)
-    
+    # Load the TOML configuration
+    config = toml.load(CONFIG_PATH)
+
     vendor_section = f"vehicle_{vendor}"
-    
+
+    # Check if the vendor section exists in the configuration
     if vendor_section in config:
-        print("==========DEBUG=============")
-        print(config[vendor_section].get('vspec_file', None))
-        print("==========DEBUG=============")
         return config[vendor_section].get('vspec_file', None)
+    
     return None

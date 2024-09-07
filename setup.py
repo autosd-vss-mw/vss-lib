@@ -45,6 +45,26 @@ directories_to_copy = [
     'vspec'
 ]
 
+# Function to remove the existing file and create a new one with the correct content
+def create_new_config_file(config_src, config_dst, vspec_path):
+    # Remove the existing config file if it exists
+    if os.path.exists(config_dst):
+        os.remove(config_dst)
+        print(f"Removed existing file: {config_dst}")
+
+    # Read the source config file
+    with open(config_src, 'r') as file:
+        content = file.read()
+
+    # Replace ${vspec_path} with the actual path
+    updated_content = content.replace('${vspec_path}', vspec_path)
+
+    # Write the updated content to the new destination file
+    with open(config_dst, 'w') as file:
+        file.write(updated_content)
+
+    print(f"Created new config file: {config_dst} with vspec_path = {vspec_path}")
+
 # Custom install command to handle file installation and ensure directories exist
 class CustomInstallCommand(install):
     def run(self):
@@ -72,16 +92,17 @@ class CustomInstallCommand(install):
         os.chmod(LOG_DIR, 0o755)
         print(f"Ensured {LOG_DIR} exists with correct permissions")
 
-        # Copy the systemd unit file
-        shutil.copy('systemd/vss-dbus.service', SYSTEMD_DIR)
-        print(f"Copied systemd/vss-dbus.service to {SYSTEMD_DIR}")
+        # Define the VSS path
+        vspec_path = '/usr/share/vss-lib/'
 
-        # Copy the config file to /etc/vss-lib
-        shutil.copy('etc/vss-lib/vss.config', ETC_DIR)
-        print(f"Copied etc/vss-lib/vss.config to {ETC_DIR}")
+        # Remove and create a new config file
+        config_file_src = 'etc/vss-lib/vss.config'
+        config_file_dst = os.path.join(ETC_DIR, 'vss.config')
+        create_new_config_file(config_file_src, config_file_dst, vspec_path)
 
-        # Copy the logging configuration file to /etc/vss-lib
-        shutil.copy('etc/vss-lib/logging.conf', ETC_DIR)
+        # Backup and copy the logging configuration file to /etc/vss-lib
+        logging_file = os.path.join(ETC_DIR, 'logging.conf')
+        shutil.copy('etc/vss-lib/logging.conf', logging_file)
         print(f"Copied etc/vss-lib/logging.conf to {ETC_DIR}")
 
         # Copy the .vspec files to /usr/share/vss-lib
@@ -90,11 +111,12 @@ class CustomInstallCommand(install):
             shutil.copy(f'usr/share/vss-lib/{vspec}', SHARE_DIR)
             print(f"Copied usr/share/vss-lib/{vspec} to {SHARE_DIR}")
 
-        # Copy the dbus service file to /usr/lib/vss-lib/dbus
-        shutil.copy('src/dbus/vss_dbus_service.py', DBUS_DIR)
+        # Backup and copy the dbus service file to /usr/lib/vss-lib/dbus
+        dbus_service_file = os.path.join(DBUS_DIR, 'vss_dbus_service.py')
+        shutil.copy('src/dbus/vss_dbus_service.py', dbus_service_file)
         print(f"Copied src/dbus/vss_dbus_service.py to {DBUS_DIR}")
 
-        # Copy the D-Bus configuration file to /etc/dbus-1/system.d
+        # Backup and copy the D-Bus configuration file to /etc/dbus-1/system.d
         dbus_conf_src = 'etc/dbus-1/system.d/vss-dbus.conf'
         dbus_conf_dst = os.path.join(DBUS_CONF_DIR, 'vss-dbus.conf')
         shutil.copy(dbus_conf_src, dbus_conf_dst)
@@ -147,6 +169,7 @@ setup(
     python_requires='>=3.10',
     install_requires=[
         "pydbus",
+        "toml",
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files

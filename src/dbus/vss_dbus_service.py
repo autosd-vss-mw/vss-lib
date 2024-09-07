@@ -13,14 +13,15 @@
 
 from pydbus import SystemBus
 from gi.repository import GLib
+import configparser
 import random
 import time
 import os
+import toml
 import threading
 from pydbus.generic import signal
 from vss_lib.vendor_interface import VehicleSignalInterface
 from vss_lib.vss_logging import logger
-import configparser
 
 class VehicleSignalService:
     """
@@ -46,25 +47,48 @@ class VehicleSignalService:
 
     SignalEmitted = signal()  # Declare the D-Bus signal
 
-    def __init__(self, config_path='/etc/vss/vss.config'):
+    def __init__(self, config_path='/etc/vss-lib/vss.config'):
         self.vsi = None  # This will be initialized based on the configuration
         self.hardware_signals = {}  # Dictionary to store hardware signals
         self.load_configuration(config_path)
 
+
     def load_configuration(self, config_path):
-        config = configparser.ConfigParser()
-        config.read(config_path)
+        # Load the TOML configuration file
+        config = toml.load(config_path)
 
-        if 'vehicle_toyota' in config:
-            vendor = config.get('vehicle_toyota', 'vendor')
-            vspec_file = config.get('vehicle_toyota', 'vspec_file')
-            preference = config.get('vehicle_toyota', 'preference')
-            attached_electronics = config.get('vehicle_toyota', 'attach_electronics').split(',')
+        vendor_count = 0  # Track the number of vendors loaded
 
-            # Pass the values to initialize VehicleSignalInterface
-            self.vsi = VehicleSignalInterface(vendor, vspec_file, preference, attached_electronics)
-            logger.info(f"Initialized VehicleSignalInterface for {vendor}")
- 
+        # Interpolate the `vspec_path` defined in the global section
+        global_config = config.get('global', {})
+        vspec_path = global_config.get('vspec_path', '')
+
+        # Iterate through all sections in the config file
+        for section, values in config.items():
+            if section.startswith('vehicle_'):
+                vendor = values.get('vendor')
+                vspec_file = values.get('vspec_file')
+            
+                # Perform manual interpolation for vspec_file if it uses the ${vspec_path} macro
+                if '${vspec_path}' in vspec_file:
+                    vspec_file = vspec_file.replace('${vspec_path}', vspec_path)
+
+                preference = values.get('preference', None)
+                attached_electronics = values.get('attach_electronics', [])
+            
+                # Log to verify correct file paths
+                logger.info(f"Loading configuration for {vendor} from VSS file: {vspec_file}")
+
+                # Initialize the VehicleSignalInterface
+                self.vsi = VehicleSignalInterface(vendor, vspec_file, preference, attached_electronics)
+                logger.info(f"Initialized VehicleSignalInterface for {vendor}")
+
+                vendor_count += 1
+
+        # If no vendors were loaded, log a warning message
+        if vendor_count == 0:
+            logger.warning("No vendors found in the configuration. No VehicleSignalInterface instances loaded.")
+
     def load_available_signals(self):
         """
         Load all available signals from the VSS model.
@@ -76,7 +100,7 @@ class VehicleSignalService:
             logger.warning("VehicleSignalInterface not initialized")
             return []
 
-        # Assuming the VehicleSignalInterface or model can list available signals
+        # VehicleSignalInterface or model can list available signals
         available_signals = []
         for signal in self.vsi.model.signals:
             available_signals.append(signal.name)

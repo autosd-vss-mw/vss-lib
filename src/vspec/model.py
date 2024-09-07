@@ -40,12 +40,21 @@ class Model:
             Model: An instance of the Model class.
         """
         try:
+            print("VOU ABRIR=====")
+            print("%s",vspec_file)
+            print("VOU ABRIR=====")
             with open(vspec_file, 'r') as file:
                 data = json.load(file)
                 logger.info(f'Successfully loaded VSS file: {vspec_file}')
                 return cls(data)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            logger.error(f'Error loading VSS file {vspec_file}: {e}')
+        except FileNotFoundError:
+            logger.error(f'VSS file not found: {vspec_file}')
+            return None
+        except json.JSONDecodeError as e:
+            logger.error(f'Error decoding JSON in VSS file {vspec_file}: {e}')
+            return None
+        except PermissionError:
+            logger.error(f'Permission denied when accessing VSS file: {vspec_file}')
             return None
 
     def find(self, path):

@@ -43,6 +43,24 @@ class BaseModel:
         except Exception as e:
             logger.error(f"Failed to initialize VehicleSignalInterface for {vendor}: {e}")
 
+        # load available signals
+        self.available_signals = self.load_available_signals()
+
+    def load_available_signals(self):
+        """
+        Load and return the available signals from the model.
+
+        Returns:
+            list: A list of signal paths available in the model.
+        """
+        if self.model is None:
+            raise AttributeError("BaseModel has no 'model' initialized.")
+
+        # top-level keys in the VSS data represent the available signals
+        return list(self.model.vspec_data.keys()) if self.model.vspec_data else []
+
+
+
     def attach_electronic(self, electronic_model):
         """
         Attach an electronics vendor to the car vendor.
