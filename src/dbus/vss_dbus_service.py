@@ -13,12 +13,9 @@
 
 from pydbus import SystemBus
 from gi.repository import GLib
-import configparser
 import random
-import time
-import os
 import toml
-import threading
+import time
 from pydbus.generic import signal
 from vss_lib.vendor_interface import VehicleSignalInterface
 from vss_lib.vss_logging import logger
@@ -26,10 +23,7 @@ from vss_lib.vss_logging import logger
 class VehicleSignalService:
     """
     D-Bus Service to send random vehicle signals or hardware-based signals.
-
-    This service supports both simulated signals (QM, ASIL) and real-time hardware signals.
     """
-
     dbus = """
     <node>
       <interface name='com.vss_lib.VehicleSignals'>
@@ -52,7 +46,6 @@ class VehicleSignalService:
         self.hardware_signals = {}  # Dictionary to store hardware signals
         self.load_configuration(config_path)
 
-
     def load_configuration(self, config_path):
         # Load the TOML configuration file
         config = toml.load(config_path)
@@ -68,14 +61,14 @@ class VehicleSignalService:
             if section.startswith('vehicle_'):
                 vendor = values.get('vendor')
                 vspec_file = values.get('vspec_file')
-            
+
                 # Perform manual interpolation for vspec_file if it uses the ${vspec_path} macro
                 if '${vspec_path}' in vspec_file:
                     vspec_file = vspec_file.replace('${vspec_path}', vspec_path)
 
                 preference = values.get('preference', None)
                 attached_electronics = values.get('attach_electronics', [])
-            
+
                 # Log to verify correct file paths
                 logger.info(f"Loading configuration for {vendor} from VSS file: {vspec_file}")
 
@@ -100,13 +93,8 @@ class VehicleSignalService:
             logger.warning("VehicleSignalInterface not initialized")
             return []
 
-        # VehicleSignalInterface or model can list available signals
-        available_signals = []
-    
         # Assuming self.vsi.model.signals is a dictionary where keys are signal names
-        for signal_name in self.vsi.model.signals:
-            available_signals.append(signal_name)  # Append the signal name directly
-
+        available_signals = list(self.vsi.model.signals.keys())
         logger.info(f"Loaded available signals: {available_signals}")
         return available_signals
 
@@ -131,11 +119,26 @@ class VehicleSignalService:
 
         # Check if the signal is defined in the VSS model
         signal_details = self.vsi.get_signal_details(signal_name)
+
         if signal_details:
-            value = random.uniform(signal_details['min'], signal_details['max'])
-            logger.info(f"Generated random value {value} for signal {signal_name}")
-            return signal_name, value
-        return None, None
+            min_value = signal_details.get('min')
+            max_value = signal_details.get('max')
+
+            # Ensure min and max values are not None
+            if min_value is None or max_value is None:
+                logger.error(f"Signal {signal_name} is missing min or max value. Cannot generate random value.")
+                return None, None
+
+            try:
+                value = random.uniform(min_value, max_value)
+                logger.info(f"Generated random value {value} for signal {signal_name}")
+                return signal_name, value
+            except TypeError as e:
+                logger.error(f"Error generating random value for signal {signal_name}: {e}")
+                return None, None
+        else:
+            logger.warning(f"Signal details for {signal_name} not found.")
+            return None, None
 
     def EmitSignal(self, signal_name, value):
         """
@@ -146,13 +149,15 @@ class VehicleSignalService:
 
     def StartSignalEmission(self):
         """
-        Emit random signals at regular intervals.
+        Emit random signals at regular intervals using GLib.timeout_add_seconds.
         """
-        while True:
+        def emit_callback():
             signal_name, value = self.GetRandomSignal()
             if signal_name:
                 self.EmitSignal(signal_name, value)
-            time.sleep(2)
+            return True  # Returning True ensures the function is called again
+
+        GLib.timeout_add_seconds(2, emit_callback)
 
     def EmitHardwareSignal(self, signal_name, value):
         """
@@ -166,17 +171,15 @@ class VehicleSignalService:
 if __name__ == "__main__":
     service = VehicleSignalService()
 
-    # Start the emission thread
-    signal_thread = threading.Thread(target=service.StartSignalEmission)
-    signal_thread.daemon = True
-    signal_thread.start()
-
     # Setup the D-Bus service
     bus = SystemBus()
     bus.publish(
         "com.vss_lib.VehicleSignals",
         service
     )
+
+    # Start the signal emission within the GLib main loop
+    service.StartSignalEmission()
 
     # Setup the main loop
     loop = GLib.MainLoop()
