@@ -10,20 +10,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import yaml
+
 from vss_lib.vspec.model import Model
 
 
-def load_vspec_file(vspec_file):
+def load_vspec_file(vspec_file_path):
     """
-    Load a VSS file and return the model.
+    Load the VSS file for the vehicle signals.
 
     Args:
-        vspec_file (str): The path to the VSS file.
+        vspec_file_path (str): Path to the VSS file.
 
     Returns:
-        Model: The VSS model loaded from the file.
+        dict: Parsed VSS data.
     """
-    return Model.from_file(vspec_file)
+    try:
+        with open(vspec_file_path, 'r') as file:
+            vspec_data = yaml.safe_load(file)
+            return vspec_data
+    except FileNotFoundError:
+        print(f"VSS file not found: {vspec_file_path}")
+    except yaml.YAMLError as e:
+        print(f"Error parsing YAML file: {e}")
+    return None
 
 
 def get_signal(model, path):

@@ -94,7 +94,7 @@ class VehicleSignalService:
         Load all available signals from the VSS model.
 
         Returns:
-            list: A list of all signal names available in the VSS model.
+           list: A list of all signal names available in the VSS model.
         """
         if self.vsi is None:
             logger.warning("VehicleSignalInterface not initialized")
@@ -102,8 +102,10 @@ class VehicleSignalService:
 
         # VehicleSignalInterface or model can list available signals
         available_signals = []
-        for signal in self.vsi.model.signals:
-            available_signals.append(signal.name)
+    
+        # Assuming self.vsi.model.signals is a dictionary where keys are signal names
+        for signal_name in self.vsi.model.signals:
+            available_signals.append(signal_name)  # Append the signal name directly
 
         logger.info(f"Loaded available signals: {available_signals}")
         return available_signals

@@ -11,27 +11,49 @@
 # limitations under the License.
 
 import toml
+import yaml
 
 CONFIG_PATH = '/etc/vss-lib/vss.config'
 
 
 def get_vspec_file(vendor):
     """
-    Load the VSS file path from the configuration file for the given vendor.
+    Load and parse the VSS YAML file for the given vendor.
 
     Args:
         vendor (str): The vendor name (e.g., 'toyota', 'bmw').
 
     Returns:
-        str: Path to the VSS file.
+        dict: Parsed VSS YAML data.
     """
-    # Load the TOML configuration
+    # Load the configuration file (still using toml or configparser to get paths)
     config = toml.load(CONFIG_PATH)
-
+    
     vendor_section = f"vehicle_{vendor}"
 
-    # Check if the vendor section exists in the configuration
     if vendor_section in config:
-        return config[vendor_section].get('vspec_file', None)
-    
+        vspec_file_path = config[vendor_section].get('vspec_file', None)
+        if vspec_file_path:
+            return load_vspec_file(vspec_file_path)
+    return None
+
+
+def load_vspec_file(vspec_file_path):
+    """
+    Load and parse the VSS file for the vehicle signals from a YAML file.
+
+    Args:
+        vspec_file_path (str): Path to the VSS file.
+
+    Returns:
+        dict: Parsed VSS data.
+    """
+    try:
+        with open(vspec_file_path, 'r') as file:
+            vspec_data = yaml.safe_load(file)
+            return vspec_data
+    except FileNotFoundError:
+        print(f"VSS file not found: {vspec_file_path}")
+    except yaml.YAMLError as e:
+        print(f"Error parsing YAML file: {e}")
     return None

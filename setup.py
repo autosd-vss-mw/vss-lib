@@ -170,6 +170,7 @@ setup(
     install_requires=[
         "pydbus",
         "toml",
+        "pyyaml",
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files

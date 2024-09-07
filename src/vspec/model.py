@@ -11,8 +11,8 @@
 # limitations under the License.
 # vspec/model.py
 
-import json
 from vss_lib.vss_logging import logger
+import yaml
 
 class Model:
     """
@@ -27,6 +27,7 @@ class Model:
             vspec_data (dict): The parsed VSS data.
         """
         self.vspec_data = vspec_data
+        self.signals = self._extract_signals()  # Extract signals upon initialization
 
     @classmethod
     def from_file(cls, vspec_file):
@@ -40,22 +41,32 @@ class Model:
             Model: An instance of the Model class.
         """
         try:
-            print("VOU ABRIR=====")
-            print("%s",vspec_file)
-            print("VOU ABRIR=====")
             with open(vspec_file, 'r') as file:
-                data = json.load(file)
+                data = yaml.safe_load(file)
                 logger.info(f'Successfully loaded VSS file: {vspec_file}')
                 return cls(data)
         except FileNotFoundError:
             logger.error(f'VSS file not found: {vspec_file}')
             return None
-        except json.JSONDecodeError as e:
-            logger.error(f'Error decoding JSON in VSS file {vspec_file}: {e}')
+        except yaml.YAMLError as e:
+            logger.error(f'Error decoding YAML in VSS file {vspec_file}: {e}')
             return None
         except PermissionError:
             logger.error(f'Permission denied when accessing VSS file: {vspec_file}')
             return None
+
+    def _extract_signals(self):
+        """
+        Extract signals from the loaded VSS data.
+
+        Returns:
+            dict: A dictionary of signals extracted from the VSS data.
+        """
+        signals = {}
+        if 'Vehicle' in self.vspec_data:
+            for signal_name, details in self.vspec_data['Vehicle'].items():
+                signals[signal_name] = details
+        return signals
 
     def find(self, path):
         """

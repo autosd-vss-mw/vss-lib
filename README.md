@@ -15,6 +15,8 @@ VSS-Lib is a Python library and D-Bus service designed to interact with vehicle 
 
 - Python 3.10+
 - `pydbus` for D-Bus interaction
+- `pyyaml`
+- `toml`
 - Systemd for managing the D-Bus service
 
 ## Installation

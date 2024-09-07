@@ -38,7 +38,7 @@ class VehicleSignalInterface:
             ValueError: If vendor or other critical parameters are missing or invalid.
         """
         logger.info(f"Initializing VehicleSignalInterface for vendor={vendor}, vspec_file={vspec_file}")
-        
+
         self.vspec_file = vspec_file
         self.preference = preference
         self.attached_electronics = attached_electronics or []
@@ -68,7 +68,23 @@ class VehicleSignalInterface:
         # Attach electronics vendors if provided
         self._attach_electronics()
 
+        # Process the vspec_data and initialize signals
+        self.signals = self._load_signals()
+
         logger.info(f"VehicleSignalInterface initialized successfully for vendor {self.vendor}")
+
+    def _load_signals(self):
+        """
+        Load signals from the parsed VSS YAML data.
+
+        Returns:
+            dict: Signal names mapped to their details.
+        """
+        signals = {}
+        if self.model and 'Vehicle' in self.model.vspec_data:  # Use self.model.vspec_data
+            for signal_name, details in self.model.vspec_data['Vehicle'].items():
+                signals[signal_name] = details
+        return signals
 
     def _initialize_vendor_model(self):
         """
