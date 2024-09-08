@@ -68,6 +68,45 @@ class Model:
                 signals[signal_name] = details
         return signals
 
+
+    def get_signal_details(self, signal_name):
+        """
+        Get details of a signal by name from the VSS data.
+
+        Args:
+            signal_name (str): The name of the signal to retrieve details for.
+
+        Returns:
+            dict: A dictionary containing signal details such as datatype, unit, min, and max,
+                  or None if the signal is not found or the format is unexpected.
+        """
+        if not self.vspec_data:
+            return None
+
+        # Split the signal path and traverse the VSS data structure
+        signal_parts = signal_name.split('.')
+        current_data = self.vspec_data
+
+        for part in signal_parts:
+            if part in current_data:
+                current_data = current_data[part]
+            else:
+                logger.warning(f"Signal '{signal_name}' not found in VSS data.")
+                return None
+
+        # If the signal is found but is a string or number, wrap it in a dictionary for consistency
+        if isinstance(current_data, (str, int, float)):
+            logger.warning(f"Signal details for '{signal_name}' are not in expected dictionary format.")
+            return {"value": current_data}
+
+        # Ensure the data is a dictionary before returning
+        if isinstance(current_data, dict):
+            return current_data
+
+        # Log an error if the signal is not in the expected format
+        logger.error(f"Signal details for '{signal_name}' are not in the expected format.")
+        return None
+
     def find(self, path):
         """
         Find and return a signal by its path.
@@ -79,10 +118,23 @@ class Model:
             dict: The signal data if found, else None.
         """
         keys = path.split(".")
-        signal = self.vspec_data
-        for key in keys:
-            signal = signal.get(key)
-            if signal is None:
-                logger.warning(f'Signal path "{path}" not found.')
+    
+        # Ensure we start looking under the 'Vehicle' key if present
+        signal = self.vspec_data.get('Vehicle', {})
+        partial_path = "Vehicle"
+
+        for i, key in enumerate(keys):
+            if isinstance(signal, dict) and key in signal:
+                signal = signal[key]
+                partial_path += f".{key}"
+                logger.info(f"Found part of the path: {partial_path}")
+            else:
+                logger.warning(f'Key "{key}" not found in "{partial_path}".')
+                if isinstance(signal, dict):
+                    available_keys = list(signal.keys())
+                    logger.info(f"Available keys at this level: {available_keys}")
                 return None
+
+        logger.info(f"Complete signal path found: {path}")
         return signal
+

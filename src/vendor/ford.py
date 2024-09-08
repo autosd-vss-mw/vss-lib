@@ -36,5 +36,6 @@ class FordModel(BaseModel):
         if vspec_file:
             # Pass vendor, vspec_file, preference, and attached_electronics to BaseModel's constructor
             super().__init__(vendor, vspec_file, preference, attached_electronics)
+            self.attached_electronics = attached_electronics or []
         else:
             raise ValueError("Ford VSS file path not found in the configuration.")

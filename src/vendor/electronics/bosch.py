@@ -12,20 +12,38 @@
 
 from vss_lib.base_model import BaseModel
 from vss_lib.config_loader import get_vspec_file
-
+from vss_lib.vss_logging import logger
 
 class BoschModel(BaseModel):
     """
-    Bosch-specific signal model. This class extends the BaseModel to include
-    signals specific to Bosch electronics used in vehicles.
+    Bosch-specific electronics model. This class extends the BaseModel to include
+    signals specific to Bosch electronics components.
     """
 
-    def __init__(self):
+    def __init__(self, preference=None, attached_electronics=None):
         """
         Initialize the Bosch model by loading the VSS file path from the configuration.
+
+        Args:
+            preference (Optional[dict]): User preferences that may influence signal generation.
+            attached_electronics (Optional[list]): List of attached electronics, such as sensors or ECUs.
         """
-        vspec_file = get_vspec_file("bosch")
+        vendor = "bosch"  # Set the required vendor argument
+        vspec_file = get_vspec_file(vendor)
+
         if vspec_file:
-            super().__init__(vspec_file)
+            # Initialize the BaseModel with vendor, VSS file, preference, and attached electronics
+            super().__init__(vspec_file, vendor, preference, attached_electronics)
+            logger.info(f"BoschModel initialized with VSS file: {vspec_file}")
         else:
+            logger.error("Bosch VSS file path not found in the configuration.")
             raise ValueError("Bosch VSS file path not found in the configuration.")
+
+    def attach_electronic(self, electronic_model):
+        """
+        Attach an electronics component to the Bosch model.
+        """
+        logger.info(f"Attached {electronic_model.__class__.__name__} to BoschModel")
+        if not hasattr(self, 'attached_electronics'):
+            self.attached_electronics = []
+        self.attached_electronics.append(electronic_model)

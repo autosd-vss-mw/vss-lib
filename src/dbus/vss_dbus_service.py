@@ -129,17 +129,22 @@ class VehicleSignalService:
         signal_details = self.vsi.get_signal_details(signal_name)
 
         if signal_details:
-            min_value = signal_details.get('min')
-            max_value = signal_details.get('max')
+            # Handle wrapped primitive values
+            if "value" in signal_details:
+                logger.info(f"Signal {signal_name} has a simple value: {signal_details['value']}")
+                return signal_name, signal_details["value"]
 
-            # Skip signals that don't have min/max values
-            if min_value is None or max_value is None:
-                logger.error(f"Signal {signal_name} is missing min or max value. Skipping signal.")
+            min_value = signal_details.get('min', 0)
+            max_value = signal_details.get('max', 100)
+
+            # Skip signals that don't have valid min and max values
+            if min_value >= max_value:
+                logger.warning(f"Signal {signal_name} has invalid range (min: {min_value}, max: {max_value}). Skipping.")
                 return None, None
 
             try:
                 value = random.uniform(min_value, max_value)
-                logger.info(f"Generated random value {value} for signal {signal_name}")
+                logger.info(f"Generated random value {value} for signal {signal_name} (min: {min_value}, max: {max_value})")
                 return signal_name, value
             except TypeError as e:
                 logger.error(f"Error generating random value for signal {signal_name}: {e}")

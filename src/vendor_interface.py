@@ -12,6 +12,7 @@
 
 from vss_lib.vspec.model import Model
 from vss_lib.vss_logging import logger
+from invoke import run
 
 class VehicleSignalInterface:
     """
@@ -21,127 +22,66 @@ class VehicleSignalInterface:
         vendor (str): The vendor for which the interface is created.
         vspec_file (Optional[str]): Path to the VSS file for the vendor, default signals used if not provided.
         preference (Optional[dict]): User preferences for signal generation (e.g., ASIL, QM).
-        vendor_model (object): The specific vendor's model handler.
         attached_electronics (list): List of attached electronics vendors.
     """
     def __init__(self, vendor, vspec_file=None, preference=None, attached_electronics=None):
         """
-        Initialize the VehicleSignalInterface.
-
-        Args:
-            vendor (str): The vendor name for which the vehicle signal interface is being created.
-            vspec_file (Optional[str]): The path to the VSS file associated with the vendor.
-            preference (Optional[dict]): Preferences like ASIL, QM for signal generation.
-            attached_electronics (Optional[list]): List of attached electronics vendors.
-
-        Raises:
-            ValueError: If vendor or other critical parameters are missing or invalid.
+        Initialize the VehicleSignalInterface and start the Podman container for the vendor.
         """
         logger.info(f"Initializing VehicleSignalInterface for vendor={vendor}, vspec_file={vspec_file}")
 
-        self.vspec_file = vspec_file
+        self.vendor = vendor.lower()
+        self.vspec_file = vspec_file or f"/usr/share/vss-lib/{vendor}.vspec"
         self.preference = preference
         self.attached_electronics = attached_electronics or []
 
-        self.vendor = vendor.lower()
-        self.vendor_model = None
-        self.model = None
+        # Load the VSS model and assign it to self.model
+        self.model = self.load_vspec_model(self.vspec_file)
 
-        # Initialize the model using the vspec_file if provided
-        if self.vspec_file:
-            logger.info(f"Loading VSS file for vendor {self.vendor} from {self.vspec_file}")
-            self.model = Model.from_file(self.vspec_file)
-            if self.model is None:
-                logger.error(f"Failed to load VSS file for vendor {self.vendor}. Path: {self.vspec_file}")
-                raise ValueError(f"Invalid or missing VSS file for vendor {self.vendor}.")
-        else:
-            logger.warning(f"No VSS file provided for vendor {self.vendor}. Default signals may not be available.")
+        if not self.model:
+            logger.error(f"Failed to load VSS model for {vendor}")
+            raise ValueError(f"Model not found for {vendor}")
 
-        # Assign the appropriate vendor model based on the input
-        self._initialize_vendor_model()
+        # Start the Podman container to run the vss_dbus_service.py
+        run_in_podman(self.vendor, self.vspec_file)
 
-        # Check if vendor_model initialized properly
-        if not self.vendor_model:
-            logger.error(f"Failed to initialize vendor model for vendor {self.vendor}.")
-            raise ValueError(f"Vendor model for {self.vendor} could not be initialized.")
-
-        # Attach electronics vendors if provided
+        # Attach the electronics after the container is started
         self._attach_electronics()
 
-        # Process the vspec_data and initialize signals
-        self.signals = self._load_signals()
-
-        logger.info(f"VehicleSignalInterface initialized successfully for vendor {self.vendor}")
-
-    def _load_signals(self):
+    def load_vspec_model(self, vspec_file):
         """
-        Load signals from the parsed VSS YAML data.
+        Load the VSS model from the file.
+
+        Args:
+            vspec_file (str): The path to the VSS file.
 
         Returns:
-            dict: Signal names mapped to their details.
-        """
-        signals = {}
-        if self.model and 'Vehicle' in self.model.vspec_data:  # Use self.model.vspec_data
-            for signal_name, details in self.model.vspec_data['Vehicle'].items():
-                signals[signal_name] = details
-        return signals
-
-    def _initialize_vendor_model(self):
-        """
-        Initialize the vendor model based on the vendor provided.
+            Model: The loaded VSS model object or None if loading fails.
         """
         try:
-            logger.info(f"Initializing vendor model for {self.vendor}")
-            if self.vendor == "toyota":
-                from vss_lib.vendor.toyota import ToyotaModel
-                self.vendor_model = ToyotaModel()
-            elif self.vendor == "bmw":
-                from vss_lib.vendor.bmw import BMWModel
-                self.vendor_model = BMWModel()
-            elif self.vendor == "ford":
-                from vss_lib.vendor.ford import FordModel
-                self.vendor_model = FordModel()
-            elif self.vendor == "mercedes":
-                from vss_lib.vendor.mercedes import MercedesModel
-                self.vendor_model = MercedesModel()
-            elif self.vendor == "honda":
-                from vss_lib.vendor.honda import HondaModel
-                self.vendor_model = HondaModel()
-            elif self.vendor == "volvo":
-                from vss_lib.vendor.volvo import VolvoModel
-                self.vendor_model = VolvoModel()
-            elif self.vendor == "jaguar":
-                from vss_lib.vendor.jaguar import JaguarModel
-                self.vendor_model = JaguarModel()
-            else:
-                logger.error(f"Unsupported vendor: {self.vendor}")
-                raise ValueError(f"Unsupported vendor: {self.vendor}")
-        except ImportError as e:
-            logger.error(f"Failed to import vendor model for {self.vendor}: {e}")
-            raise
+            model = Model.from_file(vspec_file)
+            logger.info(f"Loaded VSS model from {vspec_file}")
+            return model
+        except Exception as e:
+            logger.error(f"Failed to load VSS model from {vspec_file}: {e}")
+            return None
 
     def _attach_electronics(self):
         """
-        Attach electronics vendors to the vendor model.
+        Attach electronics vendors to the running container.
         """
         if not self.attached_electronics:
             logger.info("No electronics to attach.")
             return
 
-        from vss_lib.vendor.electronics import bosch, renesas
+        logger.info(f"Attaching electronics to {self.vendor} container.")
+        # Logic for attaching electronics can go here
 
-        for electronic in self.attached_electronics:
-            try:
-                if electronic.lower() == "bosch":
-                    self.vendor_model.attach_electronic(bosch.BoschModel())
-                    logger.info("Attached Bosch electronics.")
-                elif electronic.lower() == "renesas":
-                    self.vendor_model.attach_electronic(renesas.RenesasModel())
-                    logger.info("Attached Renesas electronics.")
-                else:
-                    logger.warning(f"Unsupported electronic vendor: {electronic}. Skipping.")
-            except Exception as e:
-                logger.error(f"Error attaching electronic {electronic}: {e}")
+    def __del__(self):
+        """
+        Stop the Podman container when the interface is destroyed.
+        """
+        stop_podman_container(self.vendor)
 
     def get_signal_details(self, signal_name):
         """
@@ -151,14 +91,14 @@ class VehicleSignalInterface:
             signal_name (str): The name of the signal to retrieve details for.
 
         Returns:
-            dict: A dictionary containing signal details such as datatype,
-                  unit, min, and max.
+            dict: A dictionary containing signal details such as datatype, unit, min, and max.
         """
-        if not self.vendor_model:
-            logger.error("Cannot get signal details: Vendor model is not initialized.")
+        if not self.model:
+            logger.error("VSS model not loaded.")
             return None
 
-        return self.vendor_model.get_signal_details(signal_name)
+        # Traverse the VSS data to get the signal details
+        return self.model.get_signal_details(signal_name)
 
     def validate_signal(self, signal_name, value):
         """
@@ -171,8 +111,60 @@ class VehicleSignalInterface:
         Returns:
             bool: True if the value is within the signal's valid range, else False.
         """
-        if not self.vendor_model:
-            logger.error("Cannot validate signal: Vendor model is not initialized.")
-            return False
+        signal_details = self.get_signal_details(signal_name)
+        if signal_details and 'min' in signal_details and 'max' in signal_details:
+            if signal_details['min'] <= value <= signal_details['max']:
+                logger.info(f"Value {value} for signal '{signal_name}' is valid.")
+                return True
+            else:
+                logger.warning(f"Value {value} for signal '{signal_name}' is out of range.")
+                return False
+        logger.error(f"Signal '{signal_name}' not found or invalid for validation.")
+        return False
 
-        return self.vendor_model.validate_signal(signal_name, value)
+# New functions for running and stopping the Podman containers
+
+def run_in_podman(vendor, vspec_file):
+    """
+    Run the vss_dbus_service.py inside a Podman container for the given vendor.
+
+    Args:
+        vendor (str): The vendor for which the container is being created.
+        vspec_file (str): The path to the VSS file for the vendor.
+    """
+    try:
+        logger.info(f"Starting Podman container for {vendor}")
+        command = f"""
+podman run --replace --name toyota_vss_container \
+  -v /usr/lib/vss-lib/dbus/vss_dbus_service.py:/usr/lib/vss-lib/dbus/vss_dbus_service.py:Z \
+  -v /usr/lib/vss-lib:/usr/lib/vss-lib/:Z \
+  -v /etc/vss-lib/vss.config:/etc/vss-lib/vss.config:Z \
+  quay.io/podman/stable \
+  sh -c "dnf install -y python3-gobject python3-pip && pip3 install pydbus toml pyyaml && python3 /usr/lib/vss-lib/dbus/vss_dbus_service.py"
+"""
+        logger.warning(command)
+        result = run(command, hide=True, warn=True)
+        if result.ok:
+            logger.info(f"Podman container for {vendor} started successfully.")
+        else:
+            logger.error(f"Failed to start Podman container for {vendor}: {result.stderr}")
+    except Exception as e:
+        logger.error(f"Error running Podman container for {vendor}: {e}")
+
+def stop_podman_container(vendor):
+    """
+    Stop the Podman container for the given vendor.
+
+    Args:
+        vendor (str): The vendor for which the container is being stopped.
+    """
+    try:
+        logger.info(f"Stopping Podman container for {vendor}")
+        command = f"podman stop {vendor}_vss_container && podman rm {vendor}_vss_container"
+        result = run(command, hide=True, warn=True)
+        if result.ok:
+            logger.info(f"Podman container for {vendor} stopped and removed successfully.")
+        else:
+            logger.error(f"Failed to stop Podman container for {vendor}: {result.stderr}")
+    except Exception as e:
+        logger.error(f"Error stopping Podman container for {vendor}: {e}")

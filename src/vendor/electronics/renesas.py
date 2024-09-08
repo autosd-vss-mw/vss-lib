@@ -12,20 +12,38 @@
 
 from vss_lib.base_model import BaseModel
 from vss_lib.config_loader import get_vspec_file
-
+from vss_lib.vss_logging import logger
 
 class RenesasModel(BaseModel):
     """
-    Renesas-specific signal model. This class extends the BaseModel to include
-    signals specific to Renesas electronics used in vehicles.
+    Renesas-specific electronics model. This class extends the BaseModel to include
+    signals specific to Renesas electronics components.
     """
 
-    def __init__(self):
+    def __init__(self, preference=None, attached_electronics=None):
         """
         Initialize the Renesas model by loading the VSS file path from the configuration.
+
+        Args:
+            preference (Optional[dict]): User preferences that may influence signal generation.
+            attached_electronics (Optional[list]): List of attached electronics, such as sensors or ECUs.
         """
-        vspec_file = get_vspec_file("renesas")
+        vendor = "renesas"  # Set the required vendor argument
+        vspec_file = get_vspec_file(vendor)
+
         if vspec_file:
-            super().__init__(vspec_file)
+            # Initialize the BaseModel with vendor, VSS file, preference, and attached electronics
+            super().__init__(vspec_file, vendor, preference, attached_electronics)
+            logger.info(f"RenesasModel initialized with VSS file: {vspec_file}")
         else:
+            logger.error("Renesas VSS file path not found in the configuration.")
             raise ValueError("Renesas VSS file path not found in the configuration.")
+
+    def attach_electronic(self, electronic_model):
+        """
+        Attach an electronics component to the Renesas model.
+        """
+        logger.info(f"Attached {electronic_model.__class__.__name__} to RenesasModel")
+        if not hasattr(self, 'attached_electronics'):
+            self.attached_electronics = []
+        self.attached_electronics.append(electronic_model)

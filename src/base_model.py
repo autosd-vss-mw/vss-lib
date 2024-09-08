@@ -36,21 +36,17 @@ class BaseModel:
             vspec_file = f"/usr/share/vss-lib/{vspec_file}.vspec"
 
         self.vspec_file = vspec_file
-        self.model = Model.from_file(self.vspec_file)  # Load the VSS model using Model class
-        self.attached_electronics = []
-
         self.vspec_data = load_vspec_file(vspec_file)
 
-        if self.model is None:
+        if self.vspec_data is None:
             raise AttributeError(f"Failed to load model from {vspec_file}")
 
         logger.info(f'Loaded VSS model from {vspec_file}')
 
         # Initialize VehicleSignalInterface for the vendor
         try:
-            # Pass the model's vspec_data to VehicleSignalInterface
             self.vehicle_signal_interface = VehicleSignalInterface(
-                vendor=vendor, vspec_data=self.model.vspec_data, preference=preference, electronics=attached_electronics
+                vendor=vendor, preference=preference, attached_electronics=attached_electronics
             )
             logger.info(f"VehicleSignalInterface initialized for {vendor}.")
         except Exception as e:
@@ -67,11 +63,10 @@ class BaseModel:
         Returns:
             list: A list of signal paths available in the model.
         """
-        if self.model is None:
-            raise AttributeError("BaseModel has no 'model' initialized.")
+        if self.vspec_data is None:
+            raise AttributeError("BaseModel has no 'vspec_data' initialized.")
 
-        # Top-level keys in the VSS data represent the available signals
-        return list(self.model.vspec_data.keys()) if self.model.vspec_data else []
+        return list(self.vspec_data.keys()) if self.vspec_data else []
 
     def attach_electronic(self, electronic_model):
         """
@@ -119,38 +114,6 @@ class BaseModel:
             "min": signal.get('min'),
             "max": signal.get('max')
         }
- 
-    def get_signal_details(self, signal_name):
-        """
-        Get details of a signal by name.
-
-        Args:
-            signal_name (str): The name of the signal to retrieve details for.
-
-        Returns:
-            dict: A dictionary containing signal details such as datatype,
-                  unit, min, and max.
-        """
-        keys = signal_name.split(".")
-        signal = self.vspec_data  # Assume this is the loaded VSS model
-
-        for key in keys:
-            signal = signal.get(key)
-            if signal is None:
-                logger.warning(f"Signal path '{signal_name}' not found.")
-                return None
-
-        # Ensure the signal is a dictionary and not an int
-        if not isinstance(signal, dict):
-            logger.error(f"Expected signal details for '{signal_name}', but got: {signal}")
-            return None
-
-        return {
-            "datatype": signal.get('datatype'),
-            "unit": signal.get('unit'),
-            "min": signal.get('min'),
-            "max": signal.get('max')
-        }
 
     def validate_signal(self, signal_name, value):
         """
@@ -163,7 +126,7 @@ class BaseModel:
         Returns:
             bool: True if the value is valid, else False.
         """
-        signal = self.model.find(f"Vehicle.{signal_name}")
+        signal = self.get_signal_details(signal_name)
         if signal:
             if signal.get('min') <= value <= signal.get('max'):
                 logger.info(f'Value {value} for signal "{signal_name}" is valid.')

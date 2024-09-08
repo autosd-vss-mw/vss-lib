@@ -12,6 +12,7 @@
 
 from vss_lib.base_model import BaseModel
 from vss_lib.config_loader import get_vspec_file
+from vss_lib.vss_logging import logger
 
 class ToyotaModel(BaseModel):
     """
@@ -22,16 +23,28 @@ class ToyotaModel(BaseModel):
     def __init__(self, preference=None, attached_electronics=None):
         """
         Initialize the Toyota model by loading the VSS file path from the configuration.
-        
+
         Args:
             preference (Optional[dict]): User preferences that may influence signal generation.
             attached_electronics (Optional[list]): List of attached electronics, such as ECUs.
         """
         vendor = "toyota"  # Set the required vendor argument
         vspec_file = get_vspec_file(vendor)
-        
+
         if vspec_file:
-            # Pass vendor, vspec_file, preference, and attached_electronics to BaseModel's constructor
-            super().__init__(vendor, vspec_file, preference, attached_electronics)
+            # Initialize the BaseModel with vendor, VSS file, preference, and attached electronics
+            super().__init__(vspec_file, vendor, preference, attached_electronics)
+            logger.info(f"ToyotaModel initialized with VSS file: {vspec_file}")
+            self.attached_electronics = attached_electronics or []
         else:
+            logger.error("Toyota VSS file path not found in the configuration.")
             raise ValueError("Toyota VSS file path not found in the configuration.")
+
+    def attach_electronic(self, electronic_model):
+        """
+        Attach an electronics component to the Toyota model.
+        """
+        logger.info(f"Attached {electronic_model.__class__.__name__} to ToyotaModel")
+        if not hasattr(self, 'attached_electronics'):
+            self.attached_electronics = []
+        self.attached_electronics.append(electronic_model)
