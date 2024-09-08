@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -108,13 +107,17 @@ class CustomInstallCommand(install):
         shutil.copy('etc/dbus-1/system.d/vss-dbus.conf', os.path.join(DBUS_CONF_DIR, 'vss-dbus.conf'))
         print(f"Copied D-Bus configuration to {DBUS_CONF_DIR}")
 
-        # Copy electronics .vspec files to /usr/share/vss-lib/electronics/
-        electronics_source_dir = 'src/electronics/'
+        # Copy electronics .vspec files from usr/share/vss-lib/electronics/ to /usr/share/vss-lib/electronics/
+        electronics_source_dir = 'usr/share/vss-lib/electronics/'
         if os.path.exists(electronics_source_dir):
             for file_name in os.listdir(electronics_source_dir):
                 if file_name.endswith('.vspec'):
-                    shutil.copy(os.path.join(electronics_source_dir, file_name), ELECTRONICS_DIR)
-                    print(f"Copied {file_name} to {ELECTRONICS_DIR}")
+                    src_file = os.path.join(electronics_source_dir, file_name)
+                    dst_file = os.path.join(ELECTRONICS_DIR, file_name)
+                    shutil.copy(src_file, dst_file)
+                    print(f"Copied {file_name} to {dst_file}")
+                else:
+                    print(f"{file_name} is not a .vspec file, skipping...")
         else:
             print(f"Directory {electronics_source_dir} does not exist, skipping electronics files...")
 
