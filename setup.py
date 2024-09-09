@@ -34,7 +34,8 @@ python_files = [
     'config_loader.py',
     'vspec_parser.py',
     'vss_logging.py',
-    'vendor_interface.py'
+    'vendor_interface.py',
+    'canbus.py'
 ]
 
 # Directories to copy recursively to LATEST_PYTHON_SITE_PACKAGES
@@ -95,11 +96,22 @@ class CustomInstallCommand(install):
         shutil.copy('etc/vss-lib/logging.conf', os.path.join(ETC_DIR, 'logging.conf'))
         print(f"Copied logging configuration to {ETC_DIR}")
 
-        # Copy the .vspec files for vehicles to /usr/share/vss-lib
-        vspec_files = ['bmw.vspec', 'ford.vspec', 'honda.vspec', 'jaguar.vspec', 'mercedes.vspec', 'toyota.vspec', 'volvo.vspec']
+        # Define the source and destination directories
+        SRC_DIR = './usr/share/vss-lib/'
+        SHR_DIR = f'{vspec_path}'
+
+        # Ensure the destination directory exists
+        os.makedirs(SHR_DIR, exist_ok=True)
+
+        # Get all .vspec files from the source directory
+        vspec_files = [f for f in os.listdir(SRC_DIR) if f.endswith('.vspec')]
+
+        # Copy each .vspec file to the destination directory
         for vspec in vspec_files:
-            shutil.copy(f'usr/share/vss-lib/{vspec}', SHARE_DIR)
-            print(f"Copied {vspec} to {SHARE_DIR}")
+            src_path = os.path.join(SRC_DIR, vspec)
+            dest_path = os.path.join(SHR_DIR, vspec)
+            shutil.copy(src_path, dest_path)
+            print(f"Copied {vspec} to {SHR_DIR}")
 
         # Copy the dbus service file to /usr/lib/vss-lib/dbus
         shutil.copy('src/dbus/container_dbus_service', os.path.join(DBUS_DIR, 'container_dbus_service'))

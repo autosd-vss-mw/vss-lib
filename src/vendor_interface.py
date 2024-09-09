@@ -16,6 +16,7 @@ import toml
 from vss_lib.vspec.model import Model
 from vss_lib.vss_logging import logger
 from invoke import run
+from vss_lib.canbus import CANBusSimulator
 
 CONFIG_PATH = '/etc/vss-lib/vss.config'
 
@@ -39,6 +40,9 @@ class VehicleSignalInterface:
         self.vspec_file = vspec_file or f"/usr/share/vss-lib/{vendor}.vspec"
         self.preference = preference
         self.attached_electronics = attached_electronics or []
+
+        # Initialize CANBusSimulator
+        self.canbus_simulator = CANBusSimulator()
 
         # Load the VSS model and assign it to self.model
         self.model = self.load_vspec_model(self.vspec_file)
@@ -87,6 +91,10 @@ class VehicleSignalInterface:
             logger.info("No electronics to attach.")
             return
         logger.info(f"Attaching electronics to {self.vendor} container.")
+        for electronics in self.attached_electronics:
+            logger.info(f"Simulating CAN message for attached electronics: {electronics}")
+            # Simulate encoding and decoding CAN messages for each attached electronic vendor
+            self.simulate_can_message("attach_electronics", electronics)
 
     def get_signal_details(self, signal_name):
         """
@@ -106,7 +114,6 @@ class VehicleSignalInterface:
     def validate_signal(self, signal_name, value):
         """
         Validate the value of a signal based on its range and datatype.
-        Handle `null` units gracefully by allowing them to exist.
 
         Args:
             signal_name (str): The name of the signal.
@@ -117,22 +124,32 @@ class VehicleSignalInterface:
         """
         signal_details = self.get_signal_details(signal_name)
         if signal_details:
-            # Unit may be explicitly null
             unit = signal_details.get('unit', None)
-            if unit is None:
-                logger.info(f"Signal '{signal_name}' has a null unit (explicitly).")
-
             min_value = signal_details.get('min', 0)
             max_value = signal_details.get('max', 100)
 
             if min_value <= value <= max_value:
                 logger.info(f"Value {value} for signal '{signal_name}' is valid (min: {min_value}, max: {max_value}, unit: {unit if unit is not None else 'none'}).")
+                # Simulate CAN message encoding and decoding on valid signals
+                self.simulate_can_message(signal_name, value)
                 return True
             else:
                 logger.warning(f"Value {value} for signal '{signal_name}' is out of range (min: {min_value}, max: {max_value}, unit: {unit if unit is not None else 'none'}).")
                 return False
         logger.error(f"Signal '{signal_name}' not found or invalid for validation.")
         return False
+
+    def simulate_can_message(self, signal_name, value):
+        """
+        Simulate encoding and decoding a CAN message for the given signal and value.
+
+        Args:
+            signal_name (str): The name of the signal.
+            value: The value to encode in the CAN message.
+        """
+        data = {"signal": signal_name, "value": value}
+        encoded_message = self.canbus_simulator.encode_can_message(data)
+        self.canbus_simulator.decode_can_message(encoded_message)
 
 
 def load_config(config_path):
