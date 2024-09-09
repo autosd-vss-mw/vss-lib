@@ -46,7 +46,41 @@ sudo pip install .
 sudo systemctl daemon-reload
 sudo systemctl enable vss-dbus.service
 sudo systemctl start vss-dbus.service
-sudo journalctl -u vss-dbus.service -f  # To monitor in real time the vss dbus demo service
+sudo dbus-monitor --system "interface=com.vss_lib.VehicleSignals"
+
+signal time=1725863086.478979 sender=:1.9701 -> destination=(null destination) serial=184 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
+   string "Electronics.Bosch.ParkingSensorStatus.max"
+   double 1.88863
+signal time=1725863088.478907 sender=:1.9701 -> destination=(null destination) serial=185 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
+   string "Speed.min"
+   double 49.5526
+signal time=1725863090.479247 sender=:1.9701 -> destination=(null destination) serial=186 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
+   string "BrakeFluidLevel.datatype"
+   double 48.5111
+signal time=1725863092.480390 sender=:1.9701 -> destination=(null destination) serial=187 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
+   string "Electronics.Renesas.NavigationAccuracy.datatype"
+   double 11.383
+signal time=1725863094.479111 sender=:1.9701 -> destination=(null destination) serial=188 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
+   string "Speed.unit"
+   double 47.296
+signal time=1725863096.479761 sender=:1.9701 -> destination=(null destination) serial=189 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
+   string "Electronics.Renesas.NavigationAccuracy.unit"
+   double 6.26474
+```
+
+(In a second terminal, see the containers created sending the ASIL and QM signals to the VSS DBUS manager demo using VSS specs):
+```bash
+vss-lib (main) $ sudo podman ps
+[sudo] password for douglas:
+CONTAINER ID  IMAGE                                COMMAND               CREATED             STATUS             PORTS       NAMES
+9a5937f3a82f                                       /sbin/init            54 minutes ago      Up 54 minutes                  qm
+b5659436d457  localhost/toyota_vss_image:latest    sh -c /usr/lib/py...  About a minute ago  Up About a minute              toyota_vss_container
+e62bf9a0e121  localhost/bmw_vss_image:latest       sh -c /usr/lib/py...  About a minute ago  Up About a minute              bmw_vss_container
+866ad65b24b9  localhost/ford_vss_image:latest      sh -c /usr/lib/py...  About a minute ago  Up About a minute              ford_vss_container
+387283dc83e8  localhost/honda_vss_image:latest     sh -c /usr/lib/py...  About a minute ago  Up About a minute              honda_vss_container
+1e7cbb90f017  localhost/jaguar_vss_image:latest    sh -c /usr/lib/py...  About a minute ago  Up About a minute              jaguar_vss_container
+212b103ffd6a  localhost/mercedes_vss_image:latest  sh -c /usr/lib/py...  About a minute ago  Up About a minute              mercedes_vss_container
+161f79e61eb7  localhost/volvo_vss_image:latest     sh -c /usr/lib/py...  About a minute ago  Up About a minute              volvo_vss_container
 ```
 
 ### Step 4: Install the Systemd Service (setup.py should do for you but in case you want to execute manual steps)
