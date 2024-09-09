@@ -1,0 +1,28 @@
+# Base image from Podman stable (required as we use nested containers)
+FROM quay.io/podman/stable
+
+# Set build arguments for paths
+ARG VSS_LIB_PATH=/usr/lib/vss-lib
+ARG VSS_SPEC_PATH=/usr/share/vss-lib
+ARG CONFIG_PATH=/etc/vss-lib/vss.config
+
+# Install necessary system dependencies
+RUN dnf install -y python3-gobject python3-pip hostname qm && \
+    dnf clean all
+
+# Install necessary Python packages
+RUN pip3 install pydbus toml invoke pyyaml
+
+# run qm setup (not ready yet, qm failed to start, need to double check)
+#RUN /usr/share/qm/setup
+
+# Copy the VSS library and configuration file into the container
+COPY $VSS_LIB_PATH $VSS_LIB_PATH
+COPY $VSS_SPEC_PATH $VSS_SPEC_PATH
+COPY $CONFIG_PATH $CONFIG_PATH
+
+# Expose the D-Bus system socket
+VOLUME /run/dbus/system_bus_socket
+
+# Set an entrypoint to run the container_dbus_service
+ENTRYPOINT ["sh", "-c", "python3 /usr/lib/vss-lib/dbus/container_dbus_service && sleep infinity"]

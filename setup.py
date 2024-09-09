@@ -71,15 +71,17 @@ class CustomInstallCommand(install):
         # Run the standard installation process
         install.run(self)
 
-        # Ensure systemd, etc, share, dbus, and log directories exist
+        # Ensure systemd, etc, share, dbus, log, and dbus-manager directories exist
         os.makedirs(SYSTEMD_DIR, exist_ok=True)
         os.makedirs(ETC_DIR, exist_ok=True)
         os.makedirs(SHARE_DIR, exist_ok=True)
         os.makedirs(DBUS_DIR, exist_ok=True)
         os.makedirs(LOG_DIR, exist_ok=True)
         os.makedirs(ELECTRONICS_DIR, exist_ok=True)
+        dbus_manager_dir = os.path.join(SHARE_DIR, 'dbus-manager/')
+        os.makedirs(dbus_manager_dir, exist_ok=True)
 
-        print(f"Ensured necessary directories exist")
+        print(f"Ensured necessary directories exist, including {dbus_manager_dir}")
 
         # Define the VSS path
         vspec_path = '/usr/share/vss-lib/'
@@ -121,6 +123,17 @@ class CustomInstallCommand(install):
         else:
             print(f"Directory {electronics_source_dir} does not exist, skipping electronics files...")
 
+        # Copy files from dbus-manager into /usr/share/vss-lib/dbus-manager
+        dbus_manager_source_dir = 'usr/share/vss-lib/dbus-manager/'
+        if os.path.exists(dbus_manager_source_dir):
+            for file_name in os.listdir(dbus_manager_source_dir):
+                src_file = os.path.join(dbus_manager_source_dir, file_name)
+                dst_file = os.path.join(dbus_manager_dir, file_name)
+                shutil.copy(src_file, dst_file)
+                print(f"Copied {file_name} to {dbus_manager_dir}")
+        else:
+            print(f"Directory {dbus_manager_source_dir} does not exist, skipping dbus-manager files...")
+
         # Define the target directory for Python files using sysconfig's purelib path
         target_dir = os.path.join(LATEST_PYTHON_SITE_PACKAGES, "vss_lib")
 
@@ -161,7 +174,7 @@ def check_if_fedora():
     """
     try:
         # Check the operating system by reading /etc/os-release
-        result = run("grep -i 'ubuntu' /etc/os-release", warn=True, hide=True)
+        result = run("grep -i 'fedora' /etc/os-release", warn=True, hide=True)
         if result.ok:
             return True
         return False
@@ -169,8 +182,7 @@ def check_if_fedora():
         print(f"An error occurred while checking the operating system: {e}")
         return False
 
-# vss-lib was developed under Fedora 40 distro, might need to be adjusted
-# to others distros
+# vss-lib was developed under Fedora, this checks for Fedora environment
 def check_fuse_overlayfs():
     """
     Check if fuse-overlayfs is installed and recommend installation if it's missing, but only if the system is Fedora.
@@ -181,18 +193,17 @@ def check_fuse_overlayfs():
 
     try:
         # Try to find the fuse-overlayfs package using the rpm command
-        result = run("rpm -q fuse-overlayfs", warn=True, hide=True)
+        result = subprocess.run(["rpm", "-q", "fuse-overlayfs"], check=False, stdout=subprocess.PIPE)
 
-        if result.ok:
+        if result.returncode == 0:
             print("fuse-overlayfs is installed.")
         else:
-            # If the package is not found, recommend installation
             print("fuse-overlayfs is not installed. Please install it using:")
             print("sudo dnf install fuse-overlayfs")
     except Exception as e:
         print(f"An error occurred while checking fuse-overlayfs installation: {e}")
 
-# check fuse_overlayfs package
+# Check if fuse-overlayfs is installed
 check_fuse_overlayfs()
 
 # Define the setup for the package

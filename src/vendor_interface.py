@@ -88,10 +88,16 @@ class VehicleSignalInterface:
             return
         logger.info(f"Attaching electronics to {self.vendor} container.")
 
-    def __del__(self):
-        stop_podman_container(self.vendor)
-
     def get_signal_details(self, signal_name):
+        """
+        Retrieve the details of a specific signal.
+
+        Args:
+            signal_name (str): The name of the signal to retrieve details for.
+
+        Returns:
+            dict: The details of the signal, or None if the signal is not found.
+        """
         if not self.model:
             logger.error("VSS model not loaded.")
             return None
@@ -183,7 +189,7 @@ def find_vss_lib_path(config):
 def get_python_version_path():
     """
     Retrieve the Python version and return the path for site-packages dynamically.
-    
+
     Returns:
         str: The full path to /usr/lib/pythonX.Y/site-packages/vss_lib/ where X.Y is the Python version.
     """
@@ -202,43 +208,60 @@ def run_in_podman(vendor, vspec_file):
     # Load configuration
     config = load_config(CONFIG_PATH)
     if not config:
+        logger.error(f"Failed to load the configuration for {vendor}.")
         sys.exit(1)
 
     # Locate the current installation of vss-lib python site-package
     vss_lib_path = find_vss_lib_path(config)
     if not vss_lib_path:
+        logger.error(f"vss-lib path not found for {vendor}.")
         sys.exit(1)
 
     vss_spec_path = config.get("global", {}).get("vspec_path", "/usr/share/vss-lib")
+    containerfile_dbus_manager = config.get("global", {}).get("containerfile_dbus_manager", "/usr/share/vss-lib/Containerfile")
 
-    # Get current python version in the system
+    # Get current Python version path
     python_site_packages_vss_lib = get_python_version_path()
 
-    # TODO:
-    # one day we will get an official ContainImage =;-) so we
-    # will have caching system. For now, let's make it happen
+    # Step 1: Build the container image
+    try:
+        logger.info(f"Building Podman container image for {vendor}")
+        build_command = f"podman build -t {vendor}_vss_image -f {containerfile_dbus_manager} ."
+        build_result = run(build_command, hide=True, warn=True)
+        if build_result.ok:
+            logger.info(f"Container image for {vendor} built successfully.")
+        else:
+            logger.error(f"Failed to build container image for {vendor}: {build_result.stderr}")
+            sys.exit(1)
+    except Exception as e:
+        logger.error(f"Error building Podman container image for {vendor}: {e}")
+        sys.exit(1)
+
+    # Step 2: Run the container with vendor-specific configurations
     try:
         logger.info(f"Starting Podman container for {vendor}")
-        command = f"""
-        podman run --replace --name {vendor}_vss_container \
+        run_command = f"""
+        podman run -d --replace --name {vendor}_vss_container \
           -e STORAGE_DRIVER=vfs \
           --privileged \
           -v {vss_spec_path}:{vss_spec_path}:Z \
           -v {vss_lib_path}:{python_site_packages_vss_lib}:Z \
+          -v {vspec_file}:/etc/vss-lib/{vendor}.vspec:Z \
           -v /etc/vss-lib/vss.config:/etc/vss-lib/vss.config:Z \
           -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:Z \
-          quay.io/podman/stable \
-          sh -c "dnf install -y python3-gobject python3-pip && pip3 install pydbus toml invoke pyyaml && python3 {python_site_packages_vss_lib}/dbus/container_dbus_service && sleep infinity"
+          {vendor}_vss_image \
+          sh -c "{python_site_packages_vss_lib}/dbus/container_dbus_service && sleep infinity"
         """
-        logger.info(f"Running command: {command}")
-        result = run(command, hide=True, warn=True)
-        if result.ok:
+        logger.info(f"Running command for {vendor}: {run_command}")
+        run_result = run(run_command, hide=True, warn=True)
+        if run_result.ok:
             logger.info(f"Podman container for {vendor} started successfully.")
         else:
-            logger.error(f"Failed to start Podman container for {vendor}: {result.stderr}")
+            logger.error(f"Failed to start Podman container for {vendor}: {run_result.stderr}")
+            sys.exit(1)
     except Exception as e:
         logger.error(f"Error running Podman container for {vendor}: {e}")
-
+        sys.exit(1)
 
 def stop_podman_container(vendor):
     """
