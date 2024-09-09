@@ -100,7 +100,7 @@ class CustomInstallCommand(install):
             print(f"Copied {vspec} to {SHARE_DIR}")
 
         # Copy the dbus service file to /usr/lib/vss-lib/dbus
-        shutil.copy('src/dbus/vss_dbus_service.py', os.path.join(DBUS_DIR, 'vss_dbus_service.py'))
+        shutil.copy('src/dbus/container_dbus_service', os.path.join(DBUS_DIR, 'container_dbus_service'))
         print(f"Copied dbus service file to {DBUS_DIR}")
 
         # Copy the D-Bus configuration file to /etc/dbus-1/system.d
@@ -154,6 +154,46 @@ class CustomInstallCommand(install):
         except subprocess.CalledProcessError as e:
             print(f"Failed to reload D-Bus or start service: {e}")
             raise
+
+def check_if_fedora():
+    """
+    Check if the system is running Fedora by inspecting /etc/os-release or using the rpm command.
+    """
+    try:
+        # Check the operating system by reading /etc/os-release
+        result = run("grep -i 'ubuntu' /etc/os-release", warn=True, hide=True)
+        if result.ok:
+            return True
+        return False
+    except Exception as e:
+        print(f"An error occurred while checking the operating system: {e}")
+        return False
+
+# vss-lib was developed under Fedora 40 distro, might need to be adjusted
+# to others distros
+def check_fuse_overlayfs():
+    """
+    Check if fuse-overlayfs is installed and recommend installation if it's missing, but only if the system is Fedora.
+    """
+    if not check_if_fedora():
+        print("System is not running Fedora. Skipping fuse-overlayfs check.")
+        return
+
+    try:
+        # Try to find the fuse-overlayfs package using the rpm command
+        result = run("rpm -q fuse-overlayfs", warn=True, hide=True)
+
+        if result.ok:
+            print("fuse-overlayfs is installed.")
+        else:
+            # If the package is not found, recommend installation
+            print("fuse-overlayfs is not installed. Please install it using:")
+            print("sudo dnf install fuse-overlayfs")
+    except Exception as e:
+        print(f"An error occurred while checking fuse-overlayfs installation: {e}")
+
+# check fuse_overlayfs package
+check_fuse_overlayfs()
 
 # Define the setup for the package
 setup(
