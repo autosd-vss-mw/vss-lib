@@ -43,9 +43,13 @@ Install the library itself:
 
 ```bash
 sudo pip install .
+sudo systemctl daemon-reload
+sudo systemctl enable vss-dbus.service
+sudo systemctl start vss-dbus.service
+sudo journalctl -u vss-dbus.service -f  # To monitor in real time the vss dbus demo service
 ```
 
-### Step 4: Install the Systemd Service
+### Step 4: Install the Systemd Service (setup.py should do for you but in case you want to execute manual steps)
 
 To enable and start the D-Bus service, follow these steps:
 
