@@ -7,8 +7,8 @@ After=network.target
 ExecStartPre=/bin/sh -c 'ls -d /usr/lib/python3* | grep -o "python3\.[0-9]\+" | sort -V | tail -n 1 > /run/python_version'
 # Load the highest Python version from the environment file
 EnvironmentFile=/run/python_version
-# Define the full path to the vss_dbus_service.py using the highest Python version
-ExecStart=/usr/bin/$python_version/bin/python3 /usr/lib/$python_version/site-packages/vss_lib/dbus/vss_dbus_service.py
+# Define the full path to the container_dbus_service using the highest Python version
+ExecStart=/usr/bin/$python_version/bin/python3 /usr/lib/$python_version/site-packages/vss_lib/dbus/container_dbus_service
 Restart=always
 User=root
 

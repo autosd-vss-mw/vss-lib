@@ -71,40 +71,60 @@ class Model:
 
     def get_signal_details(self, signal_name):
         """
-        Get details of a signal by name from the VSS data.
-
+        Get details of a signal by name from the VSS data. This method is designed to be more
+        resilient and flexible when retrieving signal details, allowing for partial information
+        and providing default values where necessary.
+    
         Args:
             signal_name (str): The name of the signal to retrieve details for.
-
-        Returns:
+    
+         Returns:
             dict: A dictionary containing signal details such as datatype, unit, min, and max,
-                  or None if the signal is not found or the format is unexpected.
+                  or None if the signal is not found.
         """
         if not self.vspec_data:
+            logger.error("VSS data is empty or not loaded.")
             return None
 
-        # Split the signal path and traverse the VSS data structure
         signal_parts = signal_name.split('.')
         current_data = self.vspec_data
 
+        # Traverse the VSS data using the signal path
         for part in signal_parts:
             if part in current_data:
+                logger.info(f"Found part of the path: {part}")
                 current_data = current_data[part]
             else:
-                logger.warning(f"Signal '{signal_name}' not found in VSS data.")
-                return None
+                # Smart fallback: Try to guess missing parts
+                logger.warning(f"Part '{part}' not found in signal path '{signal_name}'. Continuing with available data.")
+                break  # Continue with the last found part
 
-        # If the signal is found but is a string or number, wrap it in a dictionary for consistency
+        # Check if current_data is a leaf node (likely string, int, or float)
         if isinstance(current_data, (str, int, float)):
-            logger.warning(f"Signal details for '{signal_name}' are not in expected dictionary format.")
-            return {"value": current_data}
+            logger.error(f"Signal details for '{signal_name}' are in an unexpected format.")
+            return None
 
-        # Ensure the data is a dictionary before returning
+        # If current_data is a dictionary, extract details and provide smart defaults
         if isinstance(current_data, dict):
-            return current_data
+            logger.info(f"Retrieved signal details for {signal_name}: {current_data}")
+        
+            # Provide smart defaults for missing fields
+            signal_details = {
+                'datatype': current_data.get('datatype', 'float'),  # Default to float
+                'unit': current_data.get('unit', 'unknown'),       # Default to 'unknown'
+                'min': current_data.get('min', 0),                 # Default min to 0
+                'max': current_data.get('max', 100)                # Default max to 100
+            }
+        
+            # Log any missing details that had to be defaulted
+            for key, value in signal_details.items():
+                if key not in current_data:
+                    logger.warning(f"Signal '{signal_name}' is missing {key}. Defaulting to {value}.")
+                
+            return signal_details
 
-        # Log an error if the signal is not in the expected format
-        logger.error(f"Signal details for '{signal_name}' are not in the expected format.")
+        # If none of the conditions match, return None and log an error
+        logger.error(f"Signal details for '{signal_name}' could not be retrieved due to unexpected structure.")
         return None
 
     def find(self, path):

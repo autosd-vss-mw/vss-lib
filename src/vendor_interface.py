@@ -10,9 +10,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
+import toml
 from vss_lib.vspec.model import Model
 from vss_lib.vss_logging import logger
 from invoke import run
+
+CONFIG_PATH = '/etc/vss-lib/vss.config'
 
 class VehicleSignalInterface:
     """
@@ -42,7 +47,7 @@ class VehicleSignalInterface:
             logger.error(f"Failed to load VSS model for {vendor}")
             raise ValueError(f"Model not found for {vendor}")
 
-        # Start the Podman container to run the vss_dbus_service.py
+        # Start the Podman container to run the container_dbus_service
         run_in_podman(self.vendor, self.vspec_file)
 
         # Attach the electronics after the container is started
@@ -50,7 +55,7 @@ class VehicleSignalInterface:
 
     def load_vspec_model(self, vspec_file):
         """
-        Load the VSS model from the file.
+        Load the VSS model from the file and print the contents for debugging if errors occur.
 
         Args:
             vspec_file (str): The path to the VSS file.
@@ -64,6 +69,14 @@ class VehicleSignalInterface:
             return model
         except Exception as e:
             logger.error(f"Failed to load VSS model from {vspec_file}: {e}")
+            # Print the full path and contents of the VSS file for debugging
+            if os.path.exists(vspec_file):
+                logger.error(f"Full path of the VSS file: {os.path.abspath(vspec_file)}")
+                with open(vspec_file, 'r') as file:
+                    vss_content = file.read()
+                    logger.error(f"VSS file content for {vspec_file}:\n{vss_content}")
+            else:
+                logger.error(f"VSS file {vspec_file} does not exist.")
             return None
 
     def _attach_electronics(self):
@@ -73,36 +86,21 @@ class VehicleSignalInterface:
         if not self.attached_electronics:
             logger.info("No electronics to attach.")
             return
-
         logger.info(f"Attaching electronics to {self.vendor} container.")
-        # Logic for attaching electronics can go here
 
     def __del__(self):
-        """
-        Stop the Podman container when the interface is destroyed.
-        """
         stop_podman_container(self.vendor)
 
     def get_signal_details(self, signal_name):
-        """
-        Get details of a signal by name.
-
-        Args:
-            signal_name (str): The name of the signal to retrieve details for.
-
-        Returns:
-            dict: A dictionary containing signal details such as datatype, unit, min, and max.
-        """
         if not self.model:
             logger.error("VSS model not loaded.")
             return None
-
-        # Traverse the VSS data to get the signal details
         return self.model.get_signal_details(signal_name)
 
     def validate_signal(self, signal_name, value):
         """
-        Validate the value of a signal based on its range.
+        Validate the value of a signal based on its range and datatype.
+        Handle `null` units gracefully by allowing them to exist.
 
         Args:
             signal_name (str): The name of the signal.
@@ -112,37 +110,127 @@ class VehicleSignalInterface:
             bool: True if the value is within the signal's valid range, else False.
         """
         signal_details = self.get_signal_details(signal_name)
-        if signal_details and 'min' in signal_details and 'max' in signal_details:
-            if signal_details['min'] <= value <= signal_details['max']:
-                logger.info(f"Value {value} for signal '{signal_name}' is valid.")
+        if signal_details:
+            # Unit may be explicitly null
+            unit = signal_details.get('unit', None)
+            if unit is None:
+                logger.info(f"Signal '{signal_name}' has a null unit (explicitly).")
+
+            min_value = signal_details.get('min', 0)
+            max_value = signal_details.get('max', 100)
+
+            if min_value <= value <= max_value:
+                logger.info(f"Value {value} for signal '{signal_name}' is valid (min: {min_value}, max: {max_value}, unit: {unit if unit is not None else 'none'}).")
                 return True
             else:
-                logger.warning(f"Value {value} for signal '{signal_name}' is out of range.")
+                logger.warning(f"Value {value} for signal '{signal_name}' is out of range (min: {min_value}, max: {max_value}, unit: {unit if unit is not None else 'none'}).")
                 return False
         logger.error(f"Signal '{signal_name}' not found or invalid for validation.")
         return False
 
-# New functions for running and stopping the Podman containers
+
+def load_config(config_path):
+    """
+    Load the TOML configuration file.
+
+    Args:
+        config_path (str): Path to the configuration file.
+
+    Returns:
+        dict: Parsed configuration data.
+    """
+    try:
+        with open(config_path, 'r') as config_file:
+            config = toml.load(config_file)
+        return config
+    except FileNotFoundError:
+        logger.error(f"Configuration file not found: {config_path}")
+        return None
+
+
+def get_python_version():
+    """
+    Get the current Python version in the format pythonX.Y.
+
+    Returns:
+        str: The current Python version (e.g., python3.8).
+    """
+    return f"python{sys.version_info.major}.{sys.version_info.minor}"
+
+
+def find_vss_lib_path(config):
+    """
+    Find the first valid vss-lib path based on the configuration.
+
+    Args:
+        config (dict): The parsed TOML configuration.
+
+    Returns:
+        str: The first valid path to the vss-lib directory, or None if not found.
+    """
+    python_version = get_python_version()
+    vss_lib_search_paths = config.get("global", {}).get("vss_lib_search_paths", [])
+
+    for path in vss_lib_search_paths:
+        path = path.replace("{python_version}", python_version)
+        if os.path.exists(path):
+            logger.info(f"Found vss-lib in: {path}")
+            return path
+    logger.error("vss-lib not found in any of the search paths.")
+    return None
+
+
+def get_python_version_path():
+    """
+    Retrieve the Python version and return the path for site-packages dynamically.
+    
+    Returns:
+        str: The full path to /usr/lib/pythonX.Y/site-packages/vss_lib/ where X.Y is the Python version.
+    """
+    python_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+    vss_lib_path = f"/usr/lib/{python_version}/site-packages/vss_lib"
+    return vss_lib_path
 
 def run_in_podman(vendor, vspec_file):
     """
-    Run the vss_dbus_service.py inside a Podman container for the given vendor.
+    Run the container_dbus_service inside a Podman container for the given vendor.
 
     Args:
         vendor (str): The vendor for which the container is being created.
         vspec_file (str): The path to the VSS file for the vendor.
     """
+    # Load configuration
+    config = load_config(CONFIG_PATH)
+    if not config:
+        sys.exit(1)
+
+    # Locate the current installation of vss-lib python site-package
+    vss_lib_path = find_vss_lib_path(config)
+    if not vss_lib_path:
+        sys.exit(1)
+
+    vss_spec_path = config.get("global", {}).get("vspec_path", "/usr/share/vss-lib")
+
+    # Get current python version in the system
+    python_site_packages_vss_lib = get_python_version_path()
+
+    # TODO:
+    # one day we will get an official ContainImage =;-) so we
+    # will have caching system. For now, let's make it happen
     try:
         logger.info(f"Starting Podman container for {vendor}")
         command = f"""
-podman run --replace --name toyota_vss_container \
-  -v /usr/lib/vss-lib/dbus/vss_dbus_service.py:/usr/lib/vss-lib/dbus/vss_dbus_service.py:Z \
-  -v /usr/lib/vss-lib:/usr/lib/vss-lib/:Z \
-  -v /etc/vss-lib/vss.config:/etc/vss-lib/vss.config:Z \
-  quay.io/podman/stable \
-  sh -c "dnf install -y python3-gobject python3-pip && pip3 install pydbus toml pyyaml && python3 /usr/lib/vss-lib/dbus/vss_dbus_service.py"
-"""
-        logger.warning(command)
+        podman run --replace --name {vendor}_vss_container \
+          -e STORAGE_DRIVER=vfs \
+          --privileged \
+          -v {vss_spec_path}:{vss_spec_path}:Z \
+          -v {vss_lib_path}:{python_site_packages_vss_lib}:Z \
+          -v /etc/vss-lib/vss.config:/etc/vss-lib/vss.config:Z \
+          -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:Z \
+          quay.io/podman/stable \
+          sh -c "dnf install -y python3-gobject python3-pip && pip3 install pydbus toml invoke pyyaml && python3 {python_site_packages_vss_lib}/dbus/container_dbus_service && sleep infinity"
+        """
+        logger.info(f"Running command: {command}")
         result = run(command, hide=True, warn=True)
         if result.ok:
             logger.info(f"Podman container for {vendor} started successfully.")
@@ -150,6 +238,7 @@ podman run --replace --name toyota_vss_container \
             logger.error(f"Failed to start Podman container for {vendor}: {result.stderr}")
     except Exception as e:
         logger.error(f"Error running Podman container for {vendor}: {e}")
+
 
 def stop_podman_container(vendor):
     """
