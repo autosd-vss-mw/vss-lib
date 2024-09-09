@@ -39,13 +39,17 @@ source venv/bin/activate
 
 ### Step 3: Install the Library
 
-Install the library itself:
+Install the library and the vss dbus demo service:
 
 ```bash
 sudo pip install .
 sudo systemctl daemon-reload
 sudo systemctl enable vss-dbus.service
 sudo systemctl start vss-dbus.service
+```
+
+Start monitoring the Car Manufactors vendors and partners "speaking" the Vehicle Signal Specification (VSS) protocol on top of Fedora, CentOS.
+```bash
 sudo dbus-monitor --system "interface=com.vss_lib.VehicleSignals"
 
 signal time=1725863086.478979 sender=:1.9701 -> destination=(null destination) serial=184 path=/com/vss_lib/VehicleSignals; interface=com.vss_lib.VehicleSignals; member=SignalEmitted
