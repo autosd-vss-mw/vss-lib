@@ -261,6 +261,8 @@ def run_in_podman(vendor, vspec_file):
         podman run -d --replace --name {vendor}_vss_container \
           -e STORAGE_DRIVER=vfs \
           --privileged \
+          --log-opt max-size=50m \
+          --log-opt max-file=3 \
           -v {vss_spec_path}:{vss_spec_path}:Z \
           -v {vss_lib_path}:{python_site_packages_vss_lib}:Z \
           -v {vspec_file}:/etc/vss-lib/{vendor}.vspec:Z \
