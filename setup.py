@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import sysconfig
+from invoke import run, UnexpectedExit
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
@@ -24,6 +25,7 @@ SHARE_DIR = '/usr/share/vss-lib/'
 DBUS_DIR = '/usr/lib/vss-lib/dbus/'
 LOG_DIR = '/var/log/vss-lib/'
 DBUS_CONF_DIR = '/etc/dbus-1/system.d/'
+VSS_DBUS_SERVICE = "vss-dbus"
 ELECTRONICS_DIR = os.path.join(SHARE_DIR, 'electronics/')
 LATEST_PYTHON_SITE_PACKAGES = sysconfig.get_paths()['purelib']
 
@@ -69,6 +71,9 @@ def create_new_config_file(config_src, config_dst, vspec_path):
 # Custom install command to handle file installation and ensure directories exist
 class CustomInstallCommand(install):
     def run(self):
+        # Stop the service before proceeding with the installation
+        stop_vss_dbus_service()
+
         # Run the standard installation process
         install.run(self)
 
@@ -194,6 +199,32 @@ def check_if_fedora():
         print(f"An error occurred while checking the operating system: {e}")
         return False
 
+def stop_vss_dbus_service():
+    try:
+        # Check if the service is active (running)
+        result = run(f'systemctl is-active {VSS_DBUS_SERVICE}', hide=True, warn=True)
+
+        if result.stdout.strip() == 'active':
+            print(f"Stopping {VSS_DBUS_SERVICE} service...")
+            run(f'sudo systemctl stop {VSS_DBUS_SERVICE}', hide=False, warn=True)
+            print(f"{VSS_DBUS_SERVICE} service stopped successfully.")
+        else:
+            print(f"{VSS_DBUS_SERVICE} service is not running.")
+
+        # Check if the service is enabled
+        result = run(f'systemctl is-enabled {VSS_DBUS_SERVICE}', hide=True, warn=True)
+
+        if result.stdout.strip() == 'enabled':
+            print(f"Disabling {VSS_DBUS_SERVICE} service...")
+            run(f'sudo systemctl disable {VSS_DBUS_SERVICE}', hide=False, warn=True)
+            print(f"{VSS_DBUS_SERVICE} service disabled successfully.")
+        else:
+            print(f"{VSS_DBUS_SERVICE} service is not enabled.")
+
+    except UnexpectedExit as e:
+        print(f"Error while managing {VSS_DBUS_SERVICE} service: {e}", file=sys.stderr)
+        sys.exit(1)
+
 # vss-lib was developed under Fedora, this checks for Fedora environment
 def check_fuse_overlayfs():
     """
@@ -232,6 +263,7 @@ setup(
         "pydbus",
         "toml",
         "pyyaml",
+        "invoke",
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files
