@@ -47,7 +47,7 @@ sudo pip install .
 sudo systemctl daemon-reload
 sudo systemctl enable vss-dbus.service
 sudo systemctl start vss-dbus.service
-sudo journalctl -u vss-dbus.service -f # Montior the deploy
+sudo journalctl -u vss-dbus.service -f # Monitor the deploy
 sudo dbus-monitor --system "interface=com.vss_lib.VehicleSignals" # See all signals being sent
 ```
 
