@@ -28,11 +28,4 @@ jobs:
 
     - name: Run flake8 PEP8 Check
       run: |
-        flake8 . --output-file=flake8-report.txt
-
-    - name: Upload flake8 report
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: flake8-report
-        path: flake8-report.txt
+        flake8 .
