@@ -10,6 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # vspec/model.py
+# flake8: noqa: E501
 
 from vss_lib.vss_logging import logger
 import yaml

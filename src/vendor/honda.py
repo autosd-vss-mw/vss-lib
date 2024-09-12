@@ -9,6 +9,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# flake8: noqa: E501
+
 
 from vss_lib.base_model import BaseModel
 from vss_lib.config_loader import get_vspec_file
