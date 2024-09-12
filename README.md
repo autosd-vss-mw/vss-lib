@@ -47,6 +47,8 @@ sudo pip install .
 sudo systemctl daemon-reload
 sudo systemctl enable vss-dbus.service
 sudo systemctl start vss-dbus.service
+sudo journalctl -u vss-dbus.service -f # Montior the deploy
+sudo dbus-monitor --system "interface=com.vss_lib.VehicleSignals" # See all signals being sent
 ```
 
 Start monitoring the Car Manufactors vendors and partners "speaking" the Vehicle Signal Specification (VSS) protocol on top of Fedora, CentOS.
