@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=/usr/lib/vss-lib/dbus/container_dbus_service
-Restart=always
+Restart=no
 User=root
 
 [Install]
