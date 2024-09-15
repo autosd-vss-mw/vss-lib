@@ -15,7 +15,6 @@ import os
 import shutil
 import subprocess
 import sysconfig
-from invoke import run, UnexpectedExit
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
@@ -23,6 +22,7 @@ from setuptools.command.install import install
 SYSTEMD_DIR = '/lib/systemd/system/'
 ETC_DIR = '/etc/vss-lib/'
 SHARE_DIR = '/usr/share/vss-lib/'
+USR_LIB_DIR = '/usr/lib/vss-lib/'
 DBUS_DIR = '/usr/lib/vss-lib/dbus/'
 LOG_DIR = '/var/log/vss-lib/'
 DBUS_CONF_DIR = '/etc/dbus-1/system.d/'
@@ -51,19 +51,15 @@ directories_to_copy = [
 
 # Function to remove the existing file and create a new one with the correct content
 def create_new_config_file(config_src, config_dst, vspec_path):
-    # Remove the existing config file if it exists
     if os.path.exists(config_dst):
         os.remove(config_dst)
         print(f"Removed existing file: {config_dst}")
 
-    # Read the source config file
     with open(config_src, 'r') as file:
         content = file.read()
 
-    # Replace ${vspec_path} with the actual path
     updated_content = content.replace('${vspec_path}', vspec_path)
 
-    # Write the updated content to the new destination file
     with open(config_dst, 'w') as file:
         file.write(updated_content)
 
@@ -82,6 +78,7 @@ class CustomInstallCommand(install):
         os.makedirs(SYSTEMD_DIR, exist_ok=True)
         os.makedirs(ETC_DIR, exist_ok=True)
         os.makedirs(SHARE_DIR, exist_ok=True)
+        os.makedirs(USR_LIB_DIR, exist_ok=True)
         os.makedirs(DBUS_DIR, exist_ok=True)
         os.makedirs(LOG_DIR, exist_ok=True)
         os.makedirs(ELECTRONICS_DIR, exist_ok=True)
@@ -108,6 +105,14 @@ class CustomInstallCommand(install):
 
         # Ensure the destination directory exists
         os.makedirs(SHR_DIR, exist_ok=True)
+
+        # Install the get_python_version.sh script to /usr/lib/vss-lib
+        shutil.copy('./usr/lib/vss-lib/get_python_version', os.path.join(USR_LIB_DIR, 'get_python_version'))
+        print(f"Copied get_python_version.sh to {SHARE_DIR}")
+
+        # Copy the systemd service file to /lib/systemd/system/
+        shutil.copy('systemd/vss-dbus.service', os.path.join(SYSTEMD_DIR, 'vss-dbus.service'))
+        print(f"Copied vss-dbus.service to {SYSTEMD_DIR}")
 
         # Get all .vspec files from the source directory
         vspec_files = [f for f in os.listdir(SRC_DIR) if f.endswith('.vspec')]
@@ -192,38 +197,38 @@ def check_if_fedora():
     """
     try:
         # Check the operating system by reading /etc/os-release
-        result = run("grep -i 'fedora' /etc/os-release", warn=True, hide=True)
-        if result.ok:
+        result = subprocess.run(['grep', '-i', 'fedora', '/etc/os-release'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode == 0:
             return True
         return False
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         print(f"An error occurred while checking the operating system: {e}")
         return False
 
 def stop_vss_dbus_service():
     try:
         # Check if the service is active (running)
-        result = run(f'systemctl is-active {VSS_DBUS_SERVICE}', hide=True, warn=True)
+        result = subprocess.run(['systemctl', 'is-active', VSS_DBUS_SERVICE], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         if result.stdout.strip() == 'active':
             print(f"Stopping {VSS_DBUS_SERVICE} service...")
-            run(f'sudo systemctl stop {VSS_DBUS_SERVICE}', hide=False, warn=True)
+            subprocess.run(['sudo', 'systemctl', 'stop', VSS_DBUS_SERVICE], check=True)
             print(f"{VSS_DBUS_SERVICE} service stopped successfully.")
         else:
             print(f"{VSS_DBUS_SERVICE} service is not running.")
 
         # Check if the service is enabled
-        result = run(f'systemctl is-enabled {VSS_DBUS_SERVICE}', hide=True, warn=True)
+        result = subprocess.run(['systemctl', 'is-enabled', VSS_DBUS_SERVICE], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         if result.stdout.strip() == 'enabled':
             print(f"Disabling {VSS_DBUS_SERVICE} service...")
-            run(f'sudo systemctl disable {VSS_DBUS_SERVICE}', hide=False, warn=True)
+            subprocess.run(['sudo', 'systemctl', 'disable', VSS_DBUS_SERVICE], check=True)
             print(f"{VSS_DBUS_SERVICE} service disabled successfully.")
         else:
             print(f"{VSS_DBUS_SERVICE} service is not enabled.")
 
-    except UnexpectedExit as e:
-        print(f"Error while managing {VSS_DBUS_SERVICE} service: {e}", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        print(f"Error while managing {VSS_DBUS_SERVICE} service: {e}")
         sys.exit(1)
 
 # vss-lib was developed under Fedora, this checks for Fedora environment
@@ -237,14 +242,14 @@ def check_fuse_overlayfs():
 
     try:
         # Try to find the fuse-overlayfs package using the rpm command
-        result = subprocess.run(["rpm", "-q", "fuse-overlayfs"], check=False, stdout=subprocess.PIPE)
+        result = subprocess.run(['rpm', '-q', 'fuse-overlayfs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         if result.returncode == 0:
             print("fuse-overlayfs is installed.")
         else:
             print("fuse-overlayfs is not installed. Please install it using:")
             print("sudo dnf install fuse-overlayfs")
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         print(f"An error occurred while checking fuse-overlayfs installation: {e}")
 
 # Check if fuse-overlayfs is installed
@@ -264,7 +269,6 @@ setup(
         "pydbus",
         "toml",
         "pyyaml",
-        "invoke",
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files

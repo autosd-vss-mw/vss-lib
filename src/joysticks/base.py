@@ -12,35 +12,113 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import pygame
+from pydbus import SystemBus
 from vss_lib.vss_logging import logger
-from vss_lib.vendor_interface import VehicleSignalInterface
-from vss_lib.vspec_parser import load_vspec_file
-from config_loader import get_vspec_file
 
-from joystick_controller import JoystickController
+class JoystickController:
+    def __init__(self, log_file=None):
+        """
+        Initializes the Joystick Controller and sets up D-Bus client and logging.
+        If log_file is None, logs will not be saved to a file.
+        """
+        # Initialize pygame
+        pygame.init()
+        pygame.joystick.init()
 
+        # Initialize the D-Bus client
+        self.bus = SystemBus()
+        self.vss_service = self.bus.get("com.vss_lib.VehicleSignals")
 
+        # Check if any joystick is connected
+        if pygame.joystick.get_count() == 0:
+            logger.error("No joystick found")
+            sys.exit()
+
+        # Initialize the first joystick
+        self.joystick = pygame.joystick.Joystick(0)
+        self.joystick.init()
+
+        # Log the detected joystick
+        logger.info(f"Joystick detected: {self.joystick.get_name()}")
+
+    def send_signal_to_dbus(self, signal_name, value):
+        """
+        Sends the joystick signal to D-Bus.
+        """
+        try:
+            self.vss_service.EmitHardwareSignal(signal_name, value)
+            logger.info(f"Signal '{signal_name}' with value {value} sent.")
+        except Exception as e:
+            logger.error(f"Failed to send signal '{signal_name}' to D-Bus: {e}")
+
+    def log_and_send_signal(self, signal_name, value):
+        """
+        Logs the event and sends a corresponding D-Bus signal.
+        """
+        # Log the event
+        logger.info(f"{signal_name} with value: {value}")
+
+        # Send the signal to D-Bus
+        self.send_signal_to_dbus(signal_name, value)
+
+    def log_event(self, event):
+        """
+        Logs joystick events and sends corresponding signals to D-Bus.
+        """
+        if event.type == pygame.JOYAXISMOTION:
+            # Log axis movement and send to D-Bus
+            self.log_and_send_signal(f"Axis {event.axis} moved", event.value)
+        elif event.type == pygame.JOYBUTTONDOWN:
+            # Log button press and send to D-Bus
+            self.log_and_send_signal(f"Button {event.button} pressed", 1)
+        elif event.type == pygame.JOYBUTTONUP:
+            # Log button release and send to D-Bus
+            self.log_and_send_signal(f"Button {event.button} released", 0)
+        elif event.type == pygame.JOYHATMOTION:
+            # Log D-pad (hat) movement and send to D-Bus
+            self.log_and_send_signal(f"Hat {event.hat} moved", event.value)
+
+    def listen(self):
+    """
+    Listens for joystick events and logs them.
+    """
+    try:
+        logger.info("Joystick listening started...")
+        while True:
+            events = pygame.event.get()
+            if events:
+                logger.debug(f"Events detected: {events}")
+            for event in events:
+                self.log_event(event)
+    except KeyboardInterrupt:
+        logger.info("Joystick listening interrupted and exited.")
+    finally:
+        pygame.quit()
+        logger.info("Joystick and pygame quit successfully.")
+
+# BaseModel updated to initialize the joystick controller
 class BaseModel:
     """
     Base class for handling common signal operations across different vendors.
     """
 
-    def __init__(self, vendor, preference, attached_electronics):
+    def __init__(self, vspec_file, vendor, preference, attached_electronics):
         """
-        Initialize the model by loading the VSS file for the specified vendor and setting up the vehicle interface.
-        Also conditionally initializes the JoystickController if enable_joystick is set to True.
+        Initialize the model by loading the specified VSS file and setting up the vehicle interface.
+        Also initializes the JoystickController.
         """
-        # Load the VSS file path for the given vendor using the configuration loader
-        vspec_file = get_vspec_file(vendor)
+        # Initialize JoystickController when the program starts
+        self.joystick_controller = JoystickController()
+        self.joystick_controller.listen()
 
-        if not vspec_file:
-            raise FileNotFoundError(f"VSS file for vendor '{vendor}' not found.")
+        # Ensure vspec_file is a full path
+        if not os.path.isabs(vspec_file):
+            vspec_file = f"/usr/share/vss-lib/{vspec_file}.vspec"
 
-        logger.info(f"Loaded VSS file for {vendor}: {vspec_file}")
-
-        # Load VSS data
+        self.vspec_file = vspec_file
         self.vspec_data = load_vspec_file(vspec_file)
+
         if self.vspec_data is None:
             raise AttributeError(f"Failed to load model from {vspec_file}")
 
@@ -56,27 +134,8 @@ class BaseModel:
             logger.error(f"Failed to initialize VehicleSignalInterface for {vendor}: {e}")
             self.vehicle_signal_interface = None
 
-        # Load the configuration file to check for joystick enablement
-        if self.config.get("enable_joystick", False):
-            logger.info("Joystick enabled by configuration.")
-            self.joystick_controller = JoystickController()
-            self.joystick_controller.listen()
-        else:
-            logger.info("Joystick not enabled in the configuration.")
-
         # Load available signals
         self.available_signals = self.load_available_signals()
-
-    @property
-    def config(self):
-        """
-        Fetch configuration from the config_loader.
-
-        Returns:
-            dict: The loaded configuration as a dictionary.
-        """
-        from config_loader import load_config
-        return load_config("/etc/vss-config")
 
     def load_available_signals(self):
         """
@@ -108,7 +167,8 @@ class BaseModel:
             signal_name (str): The name of the signal to retrieve details for.
 
         Returns:
-            dict: A dictionary containing signal details such as datatype, unit, min, and max.
+            dict: A dictionary containing signal details such as datatype,
+                  unit, min, and max.
         """
         keys = signal_name.split(".")
         signal = self.vspec_data  # This is the loaded VSS model

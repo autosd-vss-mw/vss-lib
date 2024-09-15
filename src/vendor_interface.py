@@ -244,7 +244,7 @@ def run_in_podman(vendor, vspec_file):
 
     # Step 1: Build the container image
     try:
-        logger.info(f"Building Podman container image for {vendor}")
+        logger.info(f"Building Podman container image...")
         build_command = f"podman build -t {vendor}_vss_image -f {containerfile_dbus_manager} ."
         build_result = run(build_command, hide=True, warn=True)
         if build_result.ok:
@@ -271,7 +271,7 @@ def run_in_podman(vendor, vspec_file):
           -v /etc/vss-lib/vss.config:/etc/vss-lib/vss.config:Z \
           -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:Z \
           {vendor}_vss_image \
-          sh -c "{python_site_packages_vss_lib}/dbus/container_dbus_service && sleep infinity"
+          sh -c "/usr/lib/vss-lib/dbus/container_dbus_service && sleep infinity"
         """
         logger.info(f"Running command for {vendor}: {run_command}")
         run_result = run(run_command, hide=True, warn=True)
