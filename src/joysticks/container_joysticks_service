@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from pydbus import SystemBus
+from gi.repository import GLib
+from evdev import InputDevice, list_devices, ecodes
+from pydbus.generic import signal
+from pydbus.request_name import NameOwner
+import logging
+import os
+
+logger = logging.getLogger("joysticks_service")
+
+class JoystickService:
+    """
+    D-Bus service to emit joystick events from all joystick devices.
+    """
+    dbus = """
+    <node>
+      <interface name='com.vss_lib.JoystickSignals'>
+        <signal name='JoystickSignalEmitted'>
+          <arg type='s' name='signal_name'/>
+          <arg type='d' name='value'/>
+        </signal>
+      </interface>
+    </node>
+    """
+    JoystickSignalEmitted = signal()  # Declare the D-Bus signal
+
+    def __init__(self):
+        self.joystick_devices = []  # List to store all joystick devices
+        self.load_joystick_devices()
+
+    def load_joystick_devices(self):
+        """
+        Detect and load all joystick devices from /dev/input/js*.
+        """
+        devices = list_devices()
+        for device_path in devices:
+            if "js" in os.path.basename(device_path):
+                joystick = InputDevice(device_path)
+                self.joystick_devices.append(joystick)
+                logger.info(f"Loaded joystick device: {device_path}")
+
+    def start_joystick_listening(self):
+        """
+        Listen for events on all detected joystick devices and emit signals.
+        """
+        for joystick in self.joystick_devices:
+            for event in joystick.read_loop():
+                if event.type == ecodes.EV_ABS:  # Analog joystick movement
+                    signal_name = f"JoystickAxis{event.code}"
+                    value = event.value
+                    self.emit_signal(signal_name, value)
+
+    def emit_signal(self, signal_name, value):
+        """
+        Emit the joystick signal over D-Bus.
+        """
+        logger.info(f"Emitting joystick signal {signal_name} with value {value}")
+        self.JoystickSignalEmitted(signal_name, value)
+
+
+if __name__ == "__main__":
+    service = JoystickService()
+
+    # Setup the D-Bus service
+    bus = SystemBus()
+
+     # Request the bus name, allowing replacement if already taken
+    try:
+        name_owner = NameOwner(bus, "com.vss_lib.JoystickSignals", allow_replacement=True, replace=True)
+    except RuntimeError as e:
+        print(f"Error registering D-Bus name: {e}")
+        exit(1)
+
+    #bus.publish(
+    #    "com.vss_lib.JoystickSignals",
+    #    service,
+    #    replace=True
+    #)
+
+    # Start listening for joystick events
+    service.start_joystick_listening()

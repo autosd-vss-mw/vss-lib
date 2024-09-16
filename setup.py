@@ -24,6 +24,8 @@ ETC_DIR = '/etc/vss-lib/'
 SHARE_DIR = '/usr/share/vss-lib/'
 USR_LIB_DIR = '/usr/lib/vss-lib/'
 DBUS_DIR = '/usr/lib/vss-lib/dbus/'
+JOYSTICKS_USR_SHARE = '/usr/share/vss-lib/joysticks/'
+JOYSTICKS_USR_LIB = '/usr/lib/vss-lib/joysticks/'
 LOG_DIR = '/var/log/vss-lib/'
 DBUS_CONF_DIR = '/etc/dbus-1/system.d/'
 VSS_DBUS_SERVICE = "vss-dbus"
@@ -46,7 +48,8 @@ directories_to_copy = [
     'client',
     'dbus',
     'vendor',
-    'vspec'
+    'vspec',
+    'containers'
 ]
 
 # Function to remove the existing file and create a new one with the correct content
@@ -80,6 +83,8 @@ class CustomInstallCommand(install):
         os.makedirs(SHARE_DIR, exist_ok=True)
         os.makedirs(USR_LIB_DIR, exist_ok=True)
         os.makedirs(DBUS_DIR, exist_ok=True)
+        os.makedirs(JOYSTICKS_USR_SHARE, exist_ok=True)
+        os.makedirs(JOYSTICKS_USR_LIB, exist_ok=True)
         os.makedirs(LOG_DIR, exist_ok=True)
         os.makedirs(ELECTRONICS_DIR, exist_ok=True)
         dbus_manager_dir = os.path.join(SHARE_DIR, 'dbus-manager/')
@@ -128,6 +133,14 @@ class CustomInstallCommand(install):
         shutil.copy('src/dbus/container_dbus_service', os.path.join(DBUS_DIR, 'container_dbus_service'))
         print(f"Copied dbus service file to {DBUS_DIR}")
 
+        # Copy files to /usr/lib/vss-lib/joysticks
+        shutil.copy('src/joysticks/container_joysticks_service', os.path.join(JOYSTICKS_USR_LIB, 'container_joysticks_service'))
+        print(f"Copied joysticks service file to {JOYSTICKS_USR_LIB}")
+
+        # Copy files to /usr/share/vss-lib/joysticks
+        shutil.copy('usr/share/vss-lib/joysticks/ContainerFile', os.path.join(JOYSTICKS_USR_SHARE, 'ContainerFile'))
+        print(f"Copied joysticks service file to {JOYSTICKS_USR_SHARE}")
+
         # Copy the D-Bus configuration file to /etc/dbus-1/system.d
         shutil.copy('etc/dbus-1/system.d/vss-dbus.conf', os.path.join(DBUS_CONF_DIR, 'vss-dbus.conf'))
         print(f"Copied D-Bus configuration to {DBUS_CONF_DIR}")
@@ -146,8 +159,19 @@ class CustomInstallCommand(install):
         else:
             print(f"Directory {electronics_source_dir} does not exist, skipping electronics files...")
 
+        # Copy files from dbus-manager into /usr/share/vss-lib/joyticks
+        joystick_source_dir = './usr/share/vss-lib/joysticks/'
+        if os.path.exists(joystick_source_dir):
+            for file_name in os.listdir(joystick_source_dir):
+                src_file = os.path.join(joystick_source_dir, file_name)
+                dst_file = os.path.join(dbus_manager_dir, file_name)
+                shutil.copy(src_file, dst_file)
+                print(f"Copied {file_name} to {dbus_manager_dir}")
+        else:
+            print(f"Directory {joystick_source_dir} does not exist, skipping dbus-manager files...")
+
         # Copy files from dbus-manager into /usr/share/vss-lib/dbus-manager
-        dbus_manager_source_dir = 'usr/share/vss-lib/dbus-manager/'
+        dbus_manager_source_dir = './usr/share/vss-lib/dbus-manager/'
         if os.path.exists(dbus_manager_source_dir):
             for file_name in os.listdir(dbus_manager_source_dir):
                 src_file = os.path.join(dbus_manager_source_dir, file_name)
@@ -269,6 +293,7 @@ setup(
         "pydbus",
         "toml",
         "pyyaml",
+        "invoke",
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files

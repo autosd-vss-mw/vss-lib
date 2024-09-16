@@ -18,8 +18,6 @@ from vss_lib.vendor_interface import VehicleSignalInterface
 from vss_lib.vspec_parser import load_vspec_file
 from config_loader import get_vspec_file
 
-from joystick_controller import JoystickController
-
 
 class BaseModel:
     """
@@ -29,7 +27,6 @@ class BaseModel:
     def __init__(self, vendor, preference, attached_electronics):
         """
         Initialize the model by loading the VSS file for the specified vendor and setting up the vehicle interface.
-        Also conditionally initializes the JoystickController if enable_joystick is set to True.
         """
         # Load the VSS file path for the given vendor using the configuration loader
         vspec_file = get_vspec_file(vendor)
@@ -55,14 +52,6 @@ class BaseModel:
         except Exception as e:
             logger.error(f"Failed to initialize VehicleSignalInterface for {vendor}: {e}")
             self.vehicle_signal_interface = None
-
-        # Load the configuration file to check for joystick enablement
-        if self.config.get("enable_joystick", True):
-            logger.info("Joystick enabled by configuration.")
-            self.joystick_controller = JoystickController()
-            self.joystick_controller.listen()
-        else:
-            logger.info("Joystick not enabled in the configuration.")
 
         # Load available signals
         self.available_signals = self.load_available_signals()

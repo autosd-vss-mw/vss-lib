@@ -1,0 +1,26 @@
+# Base image from Podman stable (required as we use nested containers)
+FROM quay.io/podman/stable
+
+# Set build arguments for paths
+ARG VSS_LIB_PATH=/usr/lib/vss-lib
+ARG VSS_SPEC_PATH=/usr/share/vss-lib
+ARG CONFIG_PATH=/etc/vss-lib/vss.config
+
+# Install necessary system dependencies
+RUN dnf install -y python3-gobject python3-pip hostname kernel-headers gcc python3-devel && \
+    dnf clean all
+
+# Install necessary Python packages
+RUN pip3 install pydbus toml pyyaml evdev
+
+# Copy the VSS library and configuration file into the container
+COPY $VSS_LIB_PATH $VSS_LIB_PATH
+COPY $VSS_SPEC_PATH $VSS_SPEC_PATH
+COPY $CONFIG_PATH $CONFIG_PATH
+
+# Expose the D-Bus system socket
+VOLUME /run/dbus/system_bus_socket
+VOLUME /dev/input  # Bind-mount for joystick devices
+
+# Set an entrypoint to run the D-Bus service and joysticks service
+ENTRYPOINT ["sh", "-c", "python3 /usr/lib/vss-lib/joysticks/container_joysticks_service & python3 /usr/lib/vss-lib/joysticks/container_joysticks_service && sleep infinity"]

@@ -19,6 +19,7 @@ from vss_lib.vspec.model import Model
 from vss_lib.vss_logging import logger
 from invoke import run
 from vss_lib.canbus import CANBusSimulator
+from vss_lib.containers.podman import PodmanManager
 
 CONFIG_PATH = '/etc/vss-lib/vss.config'
 
@@ -54,10 +55,31 @@ class VehicleSignalInterface:
             raise ValueError(f"Model not found for {vendor}")
 
         # Start the Podman container to run the container_dbus_service
-        run_in_podman(self.vendor, self.vspec_file)
+        self.dbus_manager = self.dbus_manager_service()
+        self.joysticks_manager = self.joystick_manager_service()
 
         # Attach the electronics after the container is started
         self._attach_electronics()
+
+    def dbus_manager_service(self):
+        """
+        Run the container_dbus_service inside a Podman container for the vendor.
+        """
+        try:
+            # Create PodmanManager instance for the vendor
+            podman_manager = PodmanManager(
+                    vendor=self.vendor,
+                    vspec_file=self.vspec_file,
+                    containerfile="/usr/share/vss-lib/dbus-manager/ContainerFile"
+            )
+
+            # Build and run the Podman container
+            podman_manager.build_container()
+            podman_manager.run_container()
+
+        except Exception as e:
+            logger.error(f"Failed to start Podman container for {self.vendor}: {e}")
+            raise RuntimeError(f"Podman container could not be started for {self.vendor}")
 
     def load_vspec_model(self, vspec_file):
         """
@@ -153,151 +175,52 @@ class VehicleSignalInterface:
         encoded_message = self.canbus_simulator.encode_can_message(data)
         self.canbus_simulator.decode_can_message(encoded_message)
 
-
-def load_config(config_path):
-    """
-    Load the TOML configuration file.
-
-    Args:
-        config_path (str): Path to the configuration file.
-
-    Returns:
-        dict: Parsed configuration data.
-    """
-    try:
-        with open(config_path, 'r') as config_file:
-            config = toml.load(config_file)
-        return config
-    except FileNotFoundError:
-        logger.error(f"Configuration file not found: {config_path}")
-        return None
-
-
-def get_python_version():
-    """
-    Get the current Python version in the format pythonX.Y.
-
-    Returns:
-        str: The current Python version (e.g., python3.8).
-    """
-    return f"python{sys.version_info.major}.{sys.version_info.minor}"
-
-
-def find_vss_lib_path(config):
-    """
-    Find the first valid vss-lib path based on the configuration.
-
-    Args:
-        config (dict): The parsed TOML configuration.
-
-    Returns:
-        str: The first valid path to the vss-lib directory, or None if not found.
-    """
-    python_version = get_python_version()
-    vss_lib_search_paths = config.get("global", {}).get("vss_lib_search_paths", [])
-
-    for path in vss_lib_search_paths:
-        path = path.replace("{python_version}", python_version)
-        if os.path.exists(path):
-            logger.info(f"Found vss-lib in: {path}")
-            return path
-    logger.error("vss-lib not found in any of the search paths.")
-    return None
-
-
-def get_python_version_path():
-    """
-    Retrieve the Python version and return the path for site-packages dynamically.
-
-    Returns:
-        str: The full path to /usr/lib/pythonX.Y/site-packages/vss_lib/ where X.Y is the Python version.
-    """
-    python_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
-    vss_lib_path = f"/usr/lib/{python_version}/site-packages/vss_lib"
-    return vss_lib_path
-
-def run_in_podman(vendor, vspec_file):
-    """
-    Run the container_dbus_service inside a Podman container for the given vendor.
-
-    Args:
-        vendor (str): The vendor for which the container is being created.
-        vspec_file (str): The path to the VSS file for the vendor.
-    """
-    # Load configuration
-    config = load_config(CONFIG_PATH)
-    if not config:
-        logger.error(f"Failed to load the configuration for {vendor}.")
-        sys.exit(1)
-
-    # Locate the current installation of vss-lib python site-package
-    vss_lib_path = find_vss_lib_path(config)
-    if not vss_lib_path:
-        logger.error(f"vss-lib path not found for {vendor}.")
-        sys.exit(1)
-
-    vss_spec_path = config.get("global", {}).get("vspec_path", "/usr/share/vss-lib")
-    containerfile_dbus_manager = config.get("global", {}).get("containerfile_dbus_manager", "/usr/share/vss-lib/dbus-manager/ContainerFile")
-
-    # Get current Python version path
-    python_site_packages_vss_lib = get_python_version_path()
-
-    # Step 1: Build the container image
-    try:
-        logger.info(f"Building Podman container image...")
-        build_command = f"podman build -t {vendor}_vss_image -f {containerfile_dbus_manager} ."
-        build_result = run(build_command, hide=True, warn=True)
-        if build_result.ok:
-            logger.info(f"Container image for {vendor} built successfully.")
-        else:
-            logger.error(f"Failed to build container image for {vendor}: {build_result.stderr}")
-            sys.exit(1)
-    except Exception as e:
-        logger.error(f"Error building Podman container image for {vendor}: {e}")
-        sys.exit(1)
-
-    # Step 2: Run the container with vendor-specific configurations
-    try:
-        logger.info(f"Starting Podman container for {vendor}")
-        run_command = f"""
-        podman run -d --replace --name {vendor}_vss_container \
-          -e STORAGE_DRIVER=vfs \
-          --privileged \
-          --log-opt max-size=50m \
-          --log-opt max-file=3 \
-          -v {vss_spec_path}:{vss_spec_path}:Z \
-          -v {vss_lib_path}:{python_site_packages_vss_lib}:Z \
-          -v {vspec_file}:/etc/vss-lib/{vendor}.vspec:Z \
-          -v /etc/vss-lib/vss.config:/etc/vss-lib/vss.config:Z \
-          -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:Z \
-          {vendor}_vss_image \
-          sh -c "/usr/lib/vss-lib/dbus/container_dbus_service && sleep infinity"
+    def stop_podman_container(self):
         """
-        logger.info(f"Running command for {vendor}: {run_command}")
-        run_result = run(run_command, hide=True, warn=True)
-        if run_result.ok:
-            logger.info(f"Podman container for {vendor} started successfully.")
-        else:
-            logger.error(f"Failed to start Podman container for {vendor}: {run_result.stderr}")
-            sys.exit(1)
-    except Exception as e:
-        logger.error(f"Error running Podman container for {vendor}: {e}")
-        sys.exit(1)
+        Stop and remove the Podman container for the vendor.
+        """
+        try:
+            # Create PodmanManager instance for the vendor
+            podman_manager = PodmanManager(vendor=self.vendor, vspec_file=self.vspec_file, containerfile="/usr/share/vss-lib/dbus-manager/ContainerFile")
 
-def stop_podman_container(vendor):
-    """
-    Stop the Podman container for the given vendor.
+            # Stop the Podman container
+            podman_manager.stop_container()
 
-    Args:
-        vendor (str): The vendor for which the container is being stopped.
-    """
-    try:
-        logger.info(f"Stopping Podman container for {vendor}")
-        command = f"podman stop {vendor}_vss_container && podman rm {vendor}_vss_container"
-        result = run(command, hide=True, warn=True)
-        if result.ok:
-            logger.info(f"Podman container for {vendor} stopped and removed successfully.")
-        else:
-            logger.error(f"Failed to stop Podman container for {vendor}: {result.stderr}")
-    except Exception as e:
-        logger.error(f"Error stopping Podman container for {vendor}: {e}")
+        except Exception as e:
+            logger.error(f"Failed to stop Podman container for {self.vendor}: {e}")
+            raise RuntimeError(f"Podman container could not be stopped for {self.vendor}")
+
+    def joystick_manager_service(self):
+        """
+            Run the joystick Podman container.
+        """
+        try:
+            # Create PodmanManager instance for joystick container
+            podman_manager = PodmanManager(
+                    vendor="joystick",
+                    vspec_file=None,
+                    containerfile="/usr/share/vss-lib/joysticks/ContainerFile"
+            )
+
+            # Build and run the joystick Podman container
+            podman_manager.build_container()
+            podman_manager.run_joystick_container()
+
+        except Exception as e:
+            logger.error(f"Failed to start joystick Podman container: {e}")
+            raise RuntimeError(f"Joystick Podman container could not be started")
+
+    def stop_joystick_container(self):
+        """
+        Stop and remove the joystick Podman container.
+        """
+        try:
+            # Create PodmanManager instance for joystick container
+            podman_manager = PodmanManager(vendor="joystick", vspec_file=None, containerfile="/usr/share/vss-lib/joysticks/ContainerFile")
+
+            # Stop the joystick Podman container
+            podman_manager.stop_container(container_name="joystick_vss_container")
+
+        except Exception as e:
+            logger.error(f"Failed to stop joystick Podman container: {e}")
+            raise RuntimeError(f"Joystick Podman container could not be stopped")
