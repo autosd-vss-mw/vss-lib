@@ -237,7 +237,7 @@ def run_in_podman(vendor, vspec_file):
         sys.exit(1)
 
     vss_spec_path = config.get("global", {}).get("vspec_path", "/usr/share/vss-lib")
-    containerfile_dbus_manager = config.get("global", {}).get("containerfile_dbus_manager", "/usr/share/vss-lib/Containerfile")
+    containerfile_dbus_manager = config.get("global", {}).get("containerfile_dbus_manager", "/usr/share/vss-lib/dbus-manager/ContainerFile")
 
     # Get current Python version path
     python_site_packages_vss_lib = get_python_version_path()

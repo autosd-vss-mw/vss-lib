@@ -57,7 +57,7 @@ class BaseModel:
             self.vehicle_signal_interface = None
 
         # Load the configuration file to check for joystick enablement
-        if self.config.get("enable_joystick", False):
+        if self.config.get("enable_joystick", True):
             logger.info("Joystick enabled by configuration.")
             self.joystick_controller = JoystickController()
             self.joystick_controller.listen()
