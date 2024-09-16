@@ -27,7 +27,11 @@ def setup_logging(default_path='/etc/vss-lib/logging.conf',
         default_level (int): Default logging level.
         env_key (str): Environment variable key to override the config file path.
     """
-    path = os.getenv(env_key, default_path)
+    path = os.getenv(env_key, default_path.strip())
+    logger = logging.getLogger(__name__)
+
+    logger.debug(f'Attempting to load logging config from {path}')
+
     if os.path.exists(path):
         try:
             logging.config.fileConfig(path, disable_existing_loggers=False)
