@@ -23,4 +23,4 @@ VOLUME /run/dbus/system_bus_socket
 VOLUME /dev/input  # Bind-mount for joystick devices
 
 # Set an entrypoint to run the D-Bus service and joysticks service
-ENTRYPOINT ["sh", "-c", "python3 /usr/lib/vss-lib/joysticks/container_joysticks_service & python3 /usr/lib/vss-lib/joysticks/container_joysticks_service && sleep infinity"]
+ENTRYPOINT ["sh", "-c", "python3 /usr/lib/vss-lib/joysticks/container_joysticks_service && sleep infinity"]
