@@ -11,12 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gi.repository import GLib
 from pydbus import SystemBus
 from gi.repository import GLib
 from evdev import InputDevice, list_devices, ecodes
 from pydbus.generic import signal
-from pydbus.request_name import NameOwner
 import logging
 import os
 
@@ -77,29 +75,22 @@ def on_timeout():
     return True
 
 if __name__ == "__main__":
-    service = JoystickService()
+    logging.basicConfig(level=logging.INFO)
 
-    # Setup the D-Bus service
     bus = SystemBus()
+    service = JoystickService()
+    service_obj = bus.publish("com.vss_lib.JoystickSignals", service)
+    logger.info("Joystick service started")
 
-     # Request the bus name, allowing replacement if already taken
-    try:
-        name_owner = NameOwner(bus, "com.vss_lib.JoystickSignals", allow_replacement=True, replace=True)
-    except RuntimeError as e:
-        print(f"Error registering D-Bus name: {e}")
-        exit(1)
-
-    # Start listening for joystick events
-    service.start_joystick_listening()
-
-    # Setup the main loop
+    # Create a GLib MainLoop to keep the service running
     loop = GLib.MainLoop()
-
-    # Add a timeout (in milliseconds). For example, 1000 ms = 1 second
-    GLib.timeout_add(1000, on_timeout)
+    GLib.timeout_add_seconds(10, on_timeout)  # Example: Periodic task every 10 seconds
 
     try:
-        loop.run()
+        service.start_joystick_listening()
     except KeyboardInterrupt:
-        logger.info("Service interrupted by user.")
+        logger.info("Service stopped by user")
+    finally:
+        logger.info("Stopping service")
+        loop.quit()
 
