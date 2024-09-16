@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from gi.repository import GLib
 from pydbus import SystemBus
 from gi.repository import GLib
 from evdev import InputDevice, list_devices, ecodes
@@ -71,6 +72,10 @@ class JoystickService:
         self.JoystickSignalEmitted(signal_name, value)
 
 
+def on_timeout():
+    print("Timeout occurred, performing periodic task")
+    return True
+
 if __name__ == "__main__":
     service = JoystickService()
 
@@ -84,11 +89,17 @@ if __name__ == "__main__":
         print(f"Error registering D-Bus name: {e}")
         exit(1)
 
-    #bus.publish(
-    #    "com.vss_lib.JoystickSignals",
-    #    service,
-    #    replace=True
-    #)
-
     # Start listening for joystick events
     service.start_joystick_listening()
+
+    # Setup the main loop
+    loop = GLib.MainLoop()
+
+    # Add a timeout (in milliseconds). For example, 1000 ms = 1 second
+    GLib.timeout_add(1000, on_timeout)
+
+    try:
+        loop.run()
+    except KeyboardInterrupt:
+        logger.info("Service interrupted by user.")
+

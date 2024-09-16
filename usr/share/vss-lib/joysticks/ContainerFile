@@ -7,7 +7,7 @@ ARG VSS_SPEC_PATH=/usr/share/vss-lib
 ARG CONFIG_PATH=/etc/vss-lib/vss.config
 
 # Install necessary system dependencies
-RUN dnf install -y python3-gobject python3-pip hostname kernel-headers gcc python3-devel && \
+RUN dnf install -y python3-gobject python3-pip hostname kernel-headers gcc python3-devel procps-ng && \
     dnf clean all
 
 # Install necessary Python packages
