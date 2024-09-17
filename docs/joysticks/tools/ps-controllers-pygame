@@ -12,10 +12,10 @@
 # limitations under the License.
 
 """
-Usage: 
-    This script detects a connected PS5 controller, tracks inputs, and controls DualSense 
-    features such as motor vibration. It ensures that the vss-dbus service is not running 
-    to avoid conflicts with the joystick device.
+Usage:
+    This script detects a connected PS4 or PS5 controller, tracks inputs, and controls
+    DualSense or DualShock4 features such as motor vibration. It ensures that the vss-dbus
+    service is not running to avoid conflicts with the joystick device.
 
     Ensure the vss-dbus service is stopped before running this tool:
         sudo systemctl stop vss-dbus
@@ -26,8 +26,10 @@ Usage:
 
 import os
 import sys
+import signal
 import pygame
-import pydualsense
+import pydualsense  # For PS5 DualSense controller
+import time
 
 class JoystickController:
     AXIS_THRESHOLD = 0.05  # Threshold to avoid small fluctuations
@@ -37,10 +39,11 @@ class JoystickController:
         self.last_axis_states = []
         self.last_hat_states = []
         self.last_button_10_state = False
-        self.last_microphone_button_state = False
         self.is_motor_vibrating = False
         self.joystick = None
-        self.ds = None
+        self.controller_type = None
+        self.ds = None  # For PS5 DualSense
+        signal.signal(signal.SIGINT, self.exit_gracefully)  # Handle Ctrl+C
 
     def check_sudo(self):
         """Checks if the script is run with sudo."""
@@ -54,53 +57,79 @@ class JoystickController:
         if service_status == 0:
             print("Error: vss-dbus service is running. This tool might conflict with the service as the joystick device might be in use.")
             print("Please stop the vss-dbus service and run the tool again.")
-            sys.exit(1)  # Exit the script with an error code
+            sys.exit(1)
 
     def initialize_controller(self):
-        """Initializes Pygame and pydualsense for PS5 controller."""
-        # Initialize Pygame and joystick
+        """Initializes Pygame and detects PS4 or PS5 controller."""
         pygame.init()
         pygame.joystick.init()
 
         if pygame.joystick.get_count() == 0:
-            print("No controller detected. Please connect your PS5 controller.")
+            print("No controller detected. Please connect your PS4 or PS5 controller.")
             sys.exit()
 
         # Initialize joystick
-        self.joystick = pygame.joystick.Joystick(0)  # Assuming PS5 controller is the first joystick
+        self.joystick = pygame.joystick.Joystick(0)  # Assuming the controller is the first joystick
         self.joystick.init()
-        print(f"Detected controller: {self.joystick.get_name()}")
+        controller_name = self.joystick.get_name()
+        print(f"Detected controller: {controller_name}")
 
-        # Initialize pydualsense
-        self.ds = pydualsense.pydualsense()
-        self.ds.init()
-        print(dir(self.ds.state))  # Debug available attributes in DSState
+        if "DualSense" in controller_name:
+            self.controller_type = "PS5"
+            self.initialize_ps5_controller()
+        elif "Wireless Controller" in controller_name or "DualShock" in controller_name:
+            self.controller_type = "PS4"
+            self.initialize_ps4_controller()
+        else:
+            print(f"Unsupported controller: {controller_name}")
+            sys.exit(1)
 
         # Initialize tracking of buttons, axes, and hats
         self.last_button_states = [False] * self.joystick.get_numbuttons()
         self.last_axis_states = [0.0] * self.joystick.get_numaxes()
         self.last_hat_states = [(0, 0)] * self.joystick.get_numhats()
 
-    def handle_dualsense_features(self):
-        """Handles special DualSense features that Pygame cannot manage."""
+    def initialize_ps5_controller(self):
+        """Initializes the PS5 DualSense controller using pydualsense."""
+        print("Initializing PS5 DualSense controller features.")
+        self.ds = pydualsense.pydualsense()
+        self.ds.init()
+
+    def initialize_ps4_controller(self):
+        """Initializes the PS4 DualShock 4 controller."""
+        print("Initializing PS4 DualShock 4 controller features.")
+
+    def handle_vibration_with_button_10(self):
+        """Handles motor vibration with Button 10 (Options button) for both controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
 
         if button_10_state != self.last_button_10_state:
             if button_10_state:
                 if not self.is_motor_vibrating:
                     print("Starting motor vibration with Button 10")
-                    self.ds.setLeftMotor(255)  # Max power to left motor
-                    self.ds.setRightMotor(255)  # Max power to right motor
+                    if self.controller_type == "PS5":
+                        self.ds.setLeftMotor(255) # Max power to left motor
+                        self.ds.setRightMotor(255) # Max power to right motor
+                    elif self.controller_type == "PS4":
+                        self.joystick.rumble(1.0, 1.0, 0)  # Start PS4 rumble with infinite duration
                     self.is_motor_vibrating = True
                 else:
                     print("Stopping motor vibration with Button 10")
-                    self.ds.setLeftMotor(0)  # Stop left motor
-                    self.ds.setRightMotor(0)  # Stop right motor
+                    if self.controller_type == "PS5":
+                        self.ds.setLeftMotor(0)
+                        self.ds.setRightMotor(0)
+                    elif self.controller_type == "PS4":
+                        self.joystick.rumble(0, 0, 0)  # Stop PS4 rumble
                     self.is_motor_vibrating = False
             self.last_button_10_state = button_10_state
 
+        # Continuously apply vibration while it is enabled
+        if self.is_motor_vibrating:
+            if self.controller_type == "PS4":
+                self.joystick.rumble(1.0, 1.0, 0)  # Refresh PS4 rumble for continuous effect
+
     def log_inputs(self):
-        """Logs button and analog inputs."""
+        """Logs button and analog inputs for both PS4 and PS5 controllers."""
         print(f"Controller has {self.joystick.get_numbuttons()} buttons, {self.joystick.get_numaxes()} axes, {self.joystick.get_numhats()} hats (D-pad)")
 
         running = True
@@ -133,19 +162,27 @@ class JoystickController:
                         print(f"Hat {hat_idx} moved to {hat_value}")
                         self.last_hat_states[hat_idx] = hat_value
 
-            # Handle special features through pydualsense
-            self.handle_dualsense_features()
+            # Handle vibration via Button 10
+            self.handle_vibration_with_button_10()
 
     def quit(self):
-        """Quits Pygame and pydualsense."""
+        """Quits Pygame and pydualsense if PS5 controller is used."""
         pygame.quit()
-        self.ds.close()
+        if self.controller_type == "PS5":
+            self.ds.close()
+
+    def exit_gracefully(self, signum, frame):
+        """Handles graceful exit on Ctrl+C."""
+        print("\nExiting...")
+        self.quit()  # Clean up and exit
+        sys.exit(0)
 
 # Run the tool
 if __name__ == "__main__":
     controller = JoystickController()
     controller.check_sudo()              # Ensure script is run with sudo
     controller.check_vss_dbus_service()  # Ensure vss-dbus is not running
-    controller.initialize_controller()   # Initialize joystick and pydualsense
+    controller.initialize_controller()   # Initialize joystick (PS4/PS5)
     controller.log_inputs()              # Start logging inputs
     controller.quit()                    # Clean up when done
+

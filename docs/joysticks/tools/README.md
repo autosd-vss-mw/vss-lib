@@ -1,31 +1,39 @@
-# PS5 Joystick Controller Logger
+# PS4 and PS5 Joystick Controller Logger
 
 ## Overview
 
-This tool detects a connected PS5 controller, tracks its inputs, and manages the special features of the DualSense controller, such as motor vibration. It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the DualSense controller.
+This tool detects connected PS4 and PS5 controllers, tracks their inputs, and manages the special features of the DualSense controller (PS5), such as motor vibration. It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
-The tool checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active. 
+The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
 ## Features
 
-- **PS5 Controller Input Logging**: Logs the button, axis, and D-pad (hat) inputs of a connected PS5 controller.
-- **Motor Vibration Control**: Uses Button 10 (Options button) to toggle motor vibration on and off.
-- **DualSense Controller Features**: Leverages the pydualsense library to manage the advanced features of the DualSense controller, including motor control.
+- **PS4/PS5 Controller Input Logging**: Logs the button, axis, and D-pad (hat) inputs of a connected PS4 or PS5 controller.
+- **Motor Vibration Control**: Uses Button 10 (Options button) to toggle motor vibration on and off. The vibration will continue until Button 10 is pressed again.
+- **DualSense Controller Features**: Leverages the pydualsense library to manage advanced features of the PS5 DualSense controller, including motor control.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
+- **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
 ## Prerequisites
 
 - **Pygame**: For general joystick handling.
 - **pydualsense**: For advanced DualSense controller features.
-  
+
 To install the dependencies:
 ```bash
 pip install pygame pydualsense
 ```
 
-To run and start seeing the controller codes for the commands you execute.... very useful for testing joysticks in Linux for car simulations. Use CTRL-C to force exit. 
+## Usage
+
+Ensure that the `vss-dbus` service is stopped before running the tool:
 ```bash
-$ sudo ./ps5-controller-pygame
+sudo systemctl stop vss-dbus
+```
+
+The tool will detect a connected PS4 or PS5 controller, log its inputs, and allow motor vibration control via Button 10 (Options button).
+```bash
+sudo ./ps-controllers-pygame
 pygame 2.6.0 (SDL 2.28.4, Python 3.12.5)
 Hello from the pygame community. https://www.pygame.org/contribute.html
 error: XDG_RUNTIME_DIR is invalid or not set in the environment.
@@ -38,4 +46,32 @@ Button 0 pressed
 Button 0 released
 Button 3 pressed
 Button 3 released
+```
+
+## Sony DualShock 4 Connection Information
+
+When a Sony DualShock 4 (CUH-ZCT2x) controller with ID `054c:09cc` is connected, it is recognized as a "Wireless Controller" by the system. Below is an example of the connection process logged by the system:
+
+### `lsusb` Output:
+
+```
+Bus 003 Device 009: ID 054c:09cc Sony Corp. DualShock 4 [CUH-ZCT2x]
+```
+
+### `dmesg` Output:
+
+```
+[73828.815810] usb 3-1: new full-speed USB device number 9 using xhci_hcd
+[73828.943692] usb 3-1: New USB device found, idVendor=054c, idProduct=09cc, bcdDevice= 1.00
+[73828.943696] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[73828.943697] usb 3-1: Product: Wireless Controller
+[73828.943698] usb 3-1: Manufacturer: Sony Interactive Entertainment
+[73828.951819] playstation 0003:054C:09CC.0006: hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment Wireless Controller] on usb-0000:00:14.0-1/input3
+[73829.004491] input: Sony Interactive Entertainment Wireless Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.3/0003:054C:09CC.0006/input/input38
+[73829.004751] input: Sony Interactive Entertainment Wireless Controller Motion Sensors as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.3/0003:054C:09CC.0006/input/input39
+[73829.004778] input: Sony Interactive Entertainment Wireless Controller Touchpad as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.3/0003:054C:09CC.0006/input/input40
+[73829.004874] playstation 0003:054C:09CC.0006: Registered DualShock4 controller hw_version=0x0000a40c fw_version=0x0000904d
+```
+
+The controller is recognized successfully and registered with motion sensors and a touchpad, using the playstation driver to manage inputs.
 ```
