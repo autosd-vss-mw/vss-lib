@@ -25,7 +25,6 @@ pip install pygame pydualsense
 
 To run and start seeing the controller codes for the commands you execute.... very useful for testing joysticks in Linux for car simulations. Use CTRL-C to force exit. 
 ```bash
-sudo ./ps5-controller-pygame
 $ sudo ./ps5-controller-pygame
 pygame 2.6.0 (SDL 2.28.4, Python 3.12.5)
 Hello from the pygame community. https://www.pygame.org/contribute.html
