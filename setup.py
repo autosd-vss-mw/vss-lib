@@ -294,6 +294,8 @@ setup(
         "toml",
         "pyyaml",
         "invoke",
+        "pygame",
+        "pydualsense"
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files

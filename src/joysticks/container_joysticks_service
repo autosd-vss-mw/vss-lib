@@ -17,12 +17,16 @@ from evdev import InputDevice, list_devices, ecodes
 from pydbus.generic import signal
 import logging
 import os
+import pygame
+import pydualsense
 
 logger = logging.getLogger("joysticks_service")
 
+
 class JoystickService:
     """
-    D-Bus service to emit joystick events from all joystick devices.
+    D-Bus service to emit joystick events from all joystick devices and control special features when available.
+    This service is generic and supports multiple types of joystick devices, including PS5 DualSense.
     """
     dbus = """
     <node>
@@ -38,7 +42,10 @@ class JoystickService:
 
     def __init__(self):
         self.joystick_devices = []  # List to store all joystick devices
+        self.ps5_controller = None  # For DualSense controller
+        self.ds = None  # pydualsense instance
         self.load_joystick_devices()
+        self.initialize_dualsense()
 
     def load_joystick_devices(self):
         """
@@ -51,6 +58,40 @@ class JoystickService:
                 self.joystick_devices.append(joystick)
                 logger.info(f"Loaded joystick device: {device_path}")
 
+    def initialize_dualsense(self):
+        """
+        Initialize the PS5 DualSense controller using pygame and pydualsense if available.
+        """
+        pygame.init()
+        pygame.joystick.init()
+
+        if pygame.joystick.get_count() == 0:
+            logger.info("No PS5 controller detected. DualSense features will be unavailable.")
+            return
+
+        self.ps5_controller = pygame.joystick.Joystick(0)
+        self.ps5_controller.init()
+        logger.info(f"Detected PS5 controller: {self.ps5_controller.get_name()}")
+
+        self.ds = pydualsense.pydualsense()
+        self.ds.init()
+        logger.info(f"DualSense controller initialized with features: {dir(self.ds.state)}")
+
+        # Set default vibration settings for the PS5 controller
+        self.ds.setLeftMotor(128)  # Medium vibration for left motor
+        self.ds.setRightMotor(128)  # Medium vibration for right motor
+
+    def handle_dualsense_features(self):
+        """
+        Handle special DualSense features such as default motor vibration and button schema.
+        """
+        if not self.ps5_controller:
+            return
+
+        # DualSense-specific button handling
+        # This section can be further extended for any special button handling if needed
+        logger.info("DualSense controller in default mode with default button schema")
+
     def start_joystick_listening(self):
         """
         Listen for events on all detected joystick devices and emit signals.
@@ -62,6 +103,9 @@ class JoystickService:
                     value = event.value
                     self.emit_signal(signal_name, value)
 
+                # Handle DualSense-specific features
+                self.handle_dualsense_features()
+
     def emit_signal(self, signal_name, value):
         """
         Emit the joystick signal over D-Bus.
@@ -69,10 +113,17 @@ class JoystickService:
         logger.info(f"Emitting joystick signal {signal_name} with value {value}")
         self.JoystickSignalEmitted(signal_name, value)
 
+    def quit(self):
+        """Quits Pygame and pydualsense when stopping the service."""
+        pygame.quit()
+        if self.ds:
+            self.ds.close()
+
 
 def on_timeout():
     print("Timeout occurred, performing periodic task")
     return True
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
@@ -92,5 +143,5 @@ if __name__ == "__main__":
         logger.info("Service stopped by user")
     finally:
         logger.info("Stopping service")
+        service.quit()
         loop.quit()
-

@@ -11,7 +11,7 @@ RUN dnf install -y python3-gobject python3-pip hostname kernel-headers gcc pytho
     dnf clean all
 
 # Install necessary Python packages
-RUN pip3 install pydbus toml pyyaml evdev
+RUN pip3 install pydbus toml pyyaml evdev pygame pydualsense
 
 # Copy the VSS library and configuration file into the container
 COPY $VSS_LIB_PATH $VSS_LIB_PATH
