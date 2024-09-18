@@ -25,7 +25,6 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - PS4 (DualShock 4)
 - PS5 (DualSense)
 - PS VR Aim Controller (input logging, no vibration)
-```
 
 ## Prerequisites
 
