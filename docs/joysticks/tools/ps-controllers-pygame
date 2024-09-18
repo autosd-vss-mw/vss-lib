@@ -13,15 +13,20 @@
 
 """
 Usage:
-    This script detects a connected PS4 or PS5 controller, tracks inputs, and controls
-    DualSense or DualShock4 features such as motor vibration. It ensures that the vss-dbus
-    service is not running to avoid conflicts with the joystick device.
+    This script detects a connected PS4, PS5, or PS VR Aim controller, tracks inputs, and controls
+    features such as motor vibration for DualSense (PS5) and DualShock 4 (PS4) controllers. It ensures
+    that the vss-dbus service is not running to avoid conflicts with the joystick device.
 
     Ensure the vss-dbus service is stopped before running this tool:
         sudo systemctl stop vss-dbus
 
     To run this script with proper permissions:
         sudo ./joystick_controller.py
+
+    Supported controllers:
+    - PS4 (DualShock 4)
+    - PS5 (DualSense)
+    - PS VR Aim Controller (input tracking only; vibration not supported)
 """
 
 import os
@@ -60,12 +65,12 @@ class JoystickController:
             sys.exit(1)
 
     def initialize_controller(self):
-        """Initializes Pygame and detects PS4 or PS5 controller."""
+        """Initializes Pygame and detects PS4, PS5, or PS VR Aim controller."""
         pygame.init()
         pygame.joystick.init()
 
         if pygame.joystick.get_count() == 0:
-            print("No controller detected. Please connect your PS4 or PS5 controller.")
+            print("No controller detected. Please connect your PS4, PS5, or PS VR Aim controller.")
             sys.exit()
 
         # Initialize joystick
@@ -80,6 +85,9 @@ class JoystickController:
         elif "Wireless Controller" in controller_name or "DualShock" in controller_name:
             self.controller_type = "PS4"
             self.initialize_ps4_controller()
+        elif "PS VR Aim Controller" in controller_name:
+            self.controller_type = "PSVR"
+            self.initialize_psvr_controller()
         else:
             print(f"Unsupported controller: {controller_name}")
             sys.exit(1)
@@ -99,8 +107,13 @@ class JoystickController:
         """Initializes the PS4 DualShock 4 controller."""
         print("Initializing PS4 DualShock 4 controller features.")
 
+    def initialize_psvr_controller(self):
+        """Initializes the PS VR Aim controller."""
+        print("Initializing PS VR Aim Controller features.")
+        # Custom handling for PS VR Aim Controller can be added here
+
     def handle_vibration_with_button_10(self):
-        """Handles motor vibration with Button 10 (Options button) for both controllers."""
+        """Handles motor vibration with Button 10 (Options button) for PS4, PS5, or PS VR Aim controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
 
         if button_10_state != self.last_button_10_state:
@@ -108,10 +121,12 @@ class JoystickController:
                 if not self.is_motor_vibrating:
                     print("Starting motor vibration with Button 10")
                     if self.controller_type == "PS5":
-                        self.ds.setLeftMotor(255) # Max power to left motor
-                        self.ds.setRightMotor(255) # Max power to right motor
+                        self.ds.setLeftMotor(255)  # Max power to left motor
+                        self.ds.setRightMotor(255)  # Max power to right motor
                     elif self.controller_type == "PS4":
                         self.joystick.rumble(1.0, 1.0, 0)  # Start PS4 rumble with infinite duration
+                    elif self.controller_type == "PSVR":
+                        print("Vibration support for PS VR Aim is not implemented.")
                     self.is_motor_vibrating = True
                 else:
                     print("Stopping motor vibration with Button 10")
@@ -124,12 +139,11 @@ class JoystickController:
             self.last_button_10_state = button_10_state
 
         # Continuously apply vibration while it is enabled
-        if self.is_motor_vibrating:
-            if self.controller_type == "PS4":
-                self.joystick.rumble(1.0, 1.0, 0)  # Refresh PS4 rumble for continuous effect
+        if self.is_motor_vibrating and self.controller_type == "PS4":
+            self.joystick.rumble(1.0, 1.0, 0)  # Refresh PS4 rumble for continuous effect
 
     def log_inputs(self):
-        """Logs button and analog inputs for both PS4 and PS5 controllers."""
+        """Logs button and analog inputs for PS4, PS5, or PS VR Aim controllers."""
         print(f"Controller has {self.joystick.get_numbuttons()} buttons, {self.joystick.get_numaxes()} axes, {self.joystick.get_numhats()} hats (D-pad)")
 
         running = True
@@ -182,7 +196,6 @@ if __name__ == "__main__":
     controller = JoystickController()
     controller.check_sudo()              # Ensure script is run with sudo
     controller.check_vss_dbus_service()  # Ensure vss-dbus is not running
-    controller.initialize_controller()   # Initialize joystick (PS4/PS5)
+    controller.initialize_controller()   # Initialize joystick (PS4/PS5/PS VR Aim)
     controller.log_inputs()              # Start logging inputs
     controller.quit()                    # Clean up when done
-
