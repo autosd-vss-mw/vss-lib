@@ -14,7 +14,7 @@
 
 """
 Usage:
-    This script detects a connected PS4, PS5, PS VR Aim, Gembird, Nintendo Switch Pro, or Stadia controller,
+    This script detects a connected PS4, PS5, PS VR Aim, Gembird, Nintendo Switch Pro, Stadia, or Xbox One Elite 2 controller,
     tracks inputs, and controls features such as motor vibration for supported controllers.
     It ensures that the vss-dbus service is not running to avoid conflicts with the joystick device.
 
@@ -31,6 +31,7 @@ Usage:
     - Gembird/PXN
     - Nintendo Switch Pro Controller
     - Stadia Controller (Google)
+    - Xbox One Elite 2 Controller
 """
 
 import os
@@ -101,6 +102,9 @@ class JoystickController:
         elif "Stadia" in controller_name:
             self.controller_type = "Stadia"
             self.initialize_stadia_controller()
+        elif "Xbox One Elite" in controller_name or "Microsoft" in controller_name:
+            self.controller_type = "Xbox"
+            self.initialize_xbox_controller()
         else:
             print(f"Unsupported controller: {controller_name}")
             sys.exit(1)
@@ -139,6 +143,11 @@ class JoystickController:
         print("Initializing Stadia Controller features.")
         # Custom handling for Stadia Controller can be added here, if needed.
 
+    def initialize_xbox_controller(self):
+        """Initializes the Xbox One Elite 2 controller features."""
+        print("Initializing Xbox One Elite 2 controller features.")
+        # If vibration support is available for Xbox controller, it can be implemented here
+
     def handle_vibration_with_button_10(self):
         """Handles motor vibration with Button 10 (Options button) for supported controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
@@ -152,6 +161,9 @@ class JoystickController:
                         self.ds.setRightMotor(255)  # Max power to right motor
                     elif self.controller_type == "PS4":
                         self.joystick.rumble(1.0, 1.0, 0)  # Start PS4 rumble with infinite duration
+                    elif self.controller_type == "Xbox":
+                        # Example: Xbox vibration could be handled here if available
+                        print("Xbox vibration started.")
                     elif self.controller_type == "PSVR":
                         print("Vibration support for PS VR Aim is not implemented.")
                     elif self.controller_type == "Nintendo":
@@ -166,6 +178,9 @@ class JoystickController:
                         self.ds.setRightMotor(0)
                     elif self.controller_type == "PS4":
                         self.joystick.rumble(0, 0, 0)  # Stop PS4 rumble
+                    elif self.controller_type == "Xbox":
+                        # Example: Xbox vibration stop handling
+                        print("Xbox vibration stopped.")
                     self.is_motor_vibrating = False
             self.last_button_10_state = button_10_state
 

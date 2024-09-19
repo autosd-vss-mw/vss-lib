@@ -10,10 +10,11 @@
     - [PNX Flight Simulator PC Game Controller](#pnx-flight-simulator-pc-game-controller)
     - [Nintendo Switch Pro Controller](#nintendo-switch-pro-controller)
     - [Stadia Controller (Google)](#stadia-controller-google)
+    - [Xbox One Elite 2 Controller](#xbox-one-elite-2-controller)
 
 ## Overview
 
-This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, and the PNX Flight Simulator PC Game Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
+This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, PNX Flight Simulator PC Game Controller, and Xbox One Elite 2 Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
 The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
@@ -26,6 +27,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **PNX Flight Simulator PC Game Controller Support**: Logs inputs from the PNX Flight Simulator PC Game Controller.
 - **Nintendo Switch Pro Controller Support**: Logs inputs from the Nintendo Switch Pro Controller.
 - **Stadia Controller Support**: Logs inputs from the Stadia Controller by Google.
+- **Xbox One Elite 2 Controller Support**: Logs inputs from the Xbox One Elite 2 Controller, supporting general input logging.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
 - **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
@@ -46,7 +48,7 @@ Ensure that the `vss-dbus` service is stopped before running the tool:
 sudo systemctl stop vss-dbus
 ```
 
-The tool will detect a connected PS4, PS5 (DualSense), Stadia, PNX Flight Simulator, or Nintendo Switch Pro Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
+The tool will detect a connected PS4, PS5 (DualSense), Stadia, PNX Flight Simulator, Nintendo Switch Pro, or Xbox One Elite 2 Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
 
 ```bash
 sudo ./gaming-controllers
@@ -127,7 +129,9 @@ Bus 003 Device 021: ID 054c:0bb2 Sony Corp. PS VR Aim Controller
 [100945.936851] usb 3-1: Product: PS VR Aim Controller
 [100945.936852] usb 3-1: Manufacturer: Sony Interactive Entertainment
 [100945.939224] input: Sony Interactive Entertainment PS VR Aim Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:054C:0BB2.0014/input/input70
-[100945.939475] hid-generic 0003:054C:0BB2.0014: input,hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment PS VR Aim Controller] on usb-0000:00:14.0-1/input0
+[100945.939475] hid-generic 0003:054C:0BB2.0014: input,hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment PS VR Aim Controller] on
+
+ usb-0000:00:14.0-1/input0
 ```
 
 ### PNX Flight Simulator PC Game Controller
@@ -137,8 +141,6 @@ Recognized as a USB HID joystick, logs all inputs from the PNX Flight Simulator 
 #### `lsusb` Output:
 
 ```
-
-
 Bus 003 Device 037: ID 11ff:3331 PNX Flight Simulator PC Game Controller
 ```
 
@@ -201,4 +203,26 @@ Bus 003 Device 039: ID 18d1:9400 Google Stadia Controller
 [182837.014567] usb 3-1: SerialNumber: 9A170YCAC5WNTR
 [182837.017203] input: Google Inc. Stadia Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.1/0003:18D1:9400.0032/input/input83
 [182837.017466] hid-generic 0003:18D1:9400.0032: input,hidraw0: USB HID v1.11 Gamepad [Google Inc. Stadia Controller] on usb-0000:00:14.0-1/input1
+```
+
+### Xbox One Elite 2 Controller
+
+Logs input from the Xbox One Elite 2 controller.
+
+#### `lsusb` Output:
+
+```
+Bus 003 Device 041: ID 045e:0b00 Microsoft Corp. Xbox One Elite 2 Controller
+```
+
+#### `dmesg` Output:
+
+```
+[183717.264044] usb 3-1: new full-speed USB device number 41 using xhci_hcd
+[183717.391816] usb 3-1: New USB device found, idVendor=045e, idProduct=0b00, bcdDevice= 4.07
+[183717.391820] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[183717.391821] usb 3-1: Product: Controller
+[183717.391821] usb 3-1: Manufacturer: Microsoft
+[183717.391822] usb 3-1: SerialNumber: 3032363330313133383232313433
+[183717.393388] input: Microsoft X-Box One Elite 2 pad as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/input/input86
 ```
