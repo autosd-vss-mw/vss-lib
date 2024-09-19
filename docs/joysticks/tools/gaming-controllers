@@ -10,6 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# flake8: noqa: E501
 
 """
 Usage:
@@ -35,7 +36,7 @@ import sys
 import signal
 import pygame
 import pydualsense  # For PS5 DualSense controller
-import time
+
 
 class JoystickController:
     AXIS_THRESHOLD = 0.05  # Threshold to avoid small fluctuations
@@ -150,7 +151,6 @@ class JoystickController:
         if self.is_motor_vibrating and self.controller_type == "PS4":
             self.joystick.rumble(1.0, 1.0, 0)  # Refresh PS4 rumble for continuous effect
 
-
     def log_inputs(self):
         """Logs button and analog inputs for the controller."""
         print(f"Controller has {self.joystick.get_numbuttons()} buttons, {self.joystick.get_numaxes()} axes, {self.joystick.get_numhats()} hats (D-pad)")
@@ -200,7 +200,7 @@ class JoystickController:
         self.quit()  # Clean up and exit
         sys.exit(0)
 
-# Run the tool
+
 if __name__ == "__main__":
     controller = JoystickController()
     controller.check_sudo()              # Ensure script is run with sudo
