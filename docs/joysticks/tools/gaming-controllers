@@ -14,7 +14,7 @@
 
 """
 Usage:
-    This script detects a connected PS4, PS5, PS VR Aim, Gembird, or Nintendo Switch Pro controller,
+    This script detects a connected PS4, PS5, PS VR Aim, Gembird, Nintendo Switch Pro, or Stadia controller,
     tracks inputs, and controls features such as motor vibration for supported controllers.
     It ensures that the vss-dbus service is not running to avoid conflicts with the joystick device.
 
@@ -30,6 +30,7 @@ Usage:
     - PS VR Aim Controller (input tracking only; vibration not supported)
     - Gembird/PXN
     - Nintendo Switch Pro Controller
+    - Stadia Controller (Google)
 """
 
 import os
@@ -97,6 +98,9 @@ class JoystickController:
         elif "Pro Controller" in controller_name:
             self.controller_type = "Nintendo"
             self.initialize_nintendo_controller()
+        elif "Stadia" in controller_name:
+            self.controller_type = "Stadia"
+            self.initialize_stadia_controller()
         else:
             print(f"Unsupported controller: {controller_name}")
             sys.exit(1)
@@ -130,6 +134,11 @@ class JoystickController:
         print("Initializing Nintendo Switch Pro Controller features.")
         # Custom handling for Nintendo Switch Pro Controller can be added here if needed.
 
+    def initialize_stadia_controller(self):
+        """Initializes the Stadia Controller features."""
+        print("Initializing Stadia Controller features.")
+        # Custom handling for Stadia Controller can be added here, if needed.
+
     def handle_vibration_with_button_10(self):
         """Handles motor vibration with Button 10 (Options button) for supported controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
@@ -147,6 +156,8 @@ class JoystickController:
                         print("Vibration support for PS VR Aim is not implemented.")
                     elif self.controller_type == "Nintendo":
                         print("Vibration support for Nintendo Switch Pro is not implemented.")
+                    elif self.controller_type == "Stadia":
+                        print("Vibration support for Stadia Controller is not implemented.")
                     self.is_motor_vibrating = True
                 else:
                     print("Stopping motor vibration with Button 10")

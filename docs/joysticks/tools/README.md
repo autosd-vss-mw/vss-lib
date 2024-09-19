@@ -9,10 +9,11 @@
     - [Sony PS VR Aim Controller](#sony-ps-vr-aim-controller)
     - [PNX Flight Simulator PC Game Controller](#pnx-flight-simulator-pc-game-controller)
     - [Nintendo Switch Pro Controller](#nintendo-switch-pro-controller)
+    - [Stadia Controller (Google)](#stadia-controller-google)
 
 ## Overview
 
-This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, and the PNX Flight Simulator PC Game Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
+This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, and the PNX Flight Simulator PC Game Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
 The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
@@ -24,6 +25,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **PS VR Aim Controller Support**: Logs inputs from the PS VR Aim Controller. Vibration is currently not supported for this device.
 - **PNX Flight Simulator PC Game Controller Support**: Logs inputs from the PNX Flight Simulator PC Game Controller.
 - **Nintendo Switch Pro Controller Support**: Logs inputs from the Nintendo Switch Pro Controller.
+- **Stadia Controller Support**: Logs inputs from the Stadia Controller by Google.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
 - **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
@@ -44,13 +46,13 @@ Ensure that the `vss-dbus` service is stopped before running the tool:
 sudo systemctl stop vss-dbus
 ```
 
-The tool will detect a connected PS4, PS5 (DualSense), PNX Flight Simulator, or Nintendo Switch Pro Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
+The tool will detect a connected PS4, PS5 (DualSense), Stadia, PNX Flight Simulator, or Nintendo Switch Pro Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
 
 ```bash
 sudo ./gaming-controllers
 pygame 2.6.0 (SDL 2.28.4, Python 3.12.5)
 Hello from the pygame community. https://www.pygame.org/contribute.html
-Detected controller: Nintendo Co., Ltd. Pro Controller
+Detected controller: Stadia Controller
 Controller has 13 buttons, 6 axes, 1 hats (D-pad)
 Axis 2 moved to -1.000
 Button 0 pressed
@@ -135,12 +137,12 @@ Recognized as a USB HID joystick, logs all inputs from the PNX Flight Simulator 
 #### `lsusb` Output:
 
 ```
+
+
 Bus 003 Device 037: ID 11ff:3331 PNX Flight Simulator PC Game Controller
 ```
 
-#### `dmes
-
-g` Output:
+#### `dmesg` Output:
 
 ```
 [178965.304471] usb 3-1: new low-speed USB device number 37 using xhci_hcd
@@ -176,4 +178,27 @@ Bus 003 Device 038: ID 057e:2009 Nintendo Co., Ltd. Switch Pro Controller
 [180763.607894] nintendo 0003:057E:2009.0031: hidraw0: USB HID v81.11 Joystick [Nintendo Co., Ltd. Pro Controller] on usb-0000:00:14.0-1/input0
 [180764.466024] nintendo 0003:057E:2009.0031: controller MAC = 98:41:5C:35:6A:DC
 [180764.498042] nintendo 0003:057E:2009.0031: using factory cal for left stick
+```
+
+### Stadia Controller (Google)
+
+Logs input from the Stadia Controller by Google.
+
+#### `lsusb` Output:
+
+```
+Bus 003 Device 039: ID 18d1:9400 Google Stadia Controller
+```
+
+#### `dmesg` Output:
+
+```
+[182836.887828] usb 3-1: new high-speed USB device number 39 using xhci_hcd
+[182837.014560] usb 3-1: New USB device found, idVendor=18d1, idProduct=9400, bcdDevice= 1.00
+[182837.014565] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[182837.014566] usb 3-1: Product: Stadia Controller
+[182837.014566] usb 3-1: Manufacturer: Google Inc.
+[182837.014567] usb 3-1: SerialNumber: 9A170YCAC5WNTR
+[182837.017203] input: Google Inc. Stadia Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.1/0003:18D1:9400.0032/input/input83
+[182837.017466] hid-generic 0003:18D1:9400.0032: input,hidraw0: USB HID v1.11 Gamepad [Google Inc. Stadia Controller] on usb-0000:00:14.0-1/input1
 ```
