@@ -1,8 +1,17 @@
-# PS4, PS5, and PS VR Aim Joystick Controller Logger
+## Table of Contents
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Prerequisites](#prerequisites)
+4. [Usage](#usage)
+5. [Supported Controllers](#supported-controllers)
+    - [Sony DualShock 4](#sony-dualshock-4)
+    - [Sony DualSense](#sony-dualsense)
+    - [Sony PS VR Aim Controller](#sony-ps-vr-aim-controller)
+    - [PNX Flight Simulator PC Game Controller](#pnx-flight-simulator-pc-game-controller)
 
 ## Overview
 
-This tool detects connected PS4, PS5, and PS VR Aim controllers, tracks their inputs, and manages the special features of the DualSense controller (PS5), such as motor vibration. It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
+This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, and the PNX Flight Simulator PC Game Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
 The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
@@ -12,6 +21,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **Motor Vibration Control**: Uses Button 10 (Options button) to toggle motor vibration on and off for PS4 and PS5 controllers. The vibration will continue until Button 10 is pressed again.
 - **DualSense Controller Features**: Leverages the pydualsense library to manage advanced features of the PS5 DualSense controller, including motor control.
 - **PS VR Aim Controller Support**: Logs inputs from the PS VR Aim Controller. Vibration is currently not supported for this device.
+- **PNX Flight Simulator PC Game Controller Support**: Logs inputs from the PNX Flight Simulator PC Game Controller.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
 - **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
@@ -19,17 +29,6 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 
 - **Pygame**: For general joystick handling.
 - **pydualsense**: For advanced DualSense controller features (PS5).
-
-## Supported Controllers
-
-- PS4 (DualShock 4)
-- PS5 (DualSense)
-- PS VR Aim Controller (input logging, no vibration)
-
-## Prerequisites
-
-- **Pygame**: For general joystick handling.
-- **pydualsense**: For advanced DualSense controller features.
 
 To install the dependencies:
 ```bash
@@ -43,14 +42,14 @@ Ensure that the `vss-dbus` service is stopped before running the tool:
 sudo systemctl stop vss-dbus
 ```
 
-The tool will detect a connected PS4 or PS5 controller, log its inputs, and allow motor vibration control via Button 10 (Options button).
+The tool will detect a connected PS4, PS5 (DualSense), or PNX Flight Simulator PC Game Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
+
 ```bash
 sudo ./ps-controllers-pygame
 pygame 2.6.0 (SDL 2.28.4, Python 3.12.5)
 Hello from the pygame community. https://www.pygame.org/contribute.html
-error: XDG_RUNTIME_DIR is invalid or not set in the environment.
 Detected controller: Sony Interactive Entertainment Wireless Controller
-['DpadDown', 'DpadLeft', 'DpadRight', 'DpadUp', 'L1', 'L2', 'L2Btn', 'L3', 'LX', 'LY', 'R1', 'R2', 'R2Btn', 'R3', 'RX', 'RY', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'accelerometer', 'circle', 'cross', 'gyro', 'micBtn', 'options', 'ps', 'setDPadState', 'share', 'square', 'touch1', 'touch2', 'touchBtn', 'touchFinger1', 'touchFinger2', 'touchLeft', 'touchRight', 'trackPadTouch0', 'trackPadTouch1', 'triangle']
+['DpadDown', 'DpadLeft', 'DpadRight', 'DpadUp', 'L1', 'L2', 'L2Btn', 'L3', 'LX', 'LY', 'R1', 'R2', 'R2Btn', 'R3', 'RX', 'RY', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'accelerometer', 'circle', 'cross', 'gyro', 'micBtn', 'options', 'ps', 'setDPadState', 'share', 'square', 'touch1', 'touch2', 'touchBtn', 'touchFinger1', 'touchFinger2', 'touchLeft', 'touchRight', 'trackPadTouch0', 'trackPadTouch1', 'triangle']
 Controller has 13 buttons, 6 axes, 1 hats (D-pad)
 Axis 2 moved to -1.000
 Axis 5 moved to -1.000
@@ -60,17 +59,19 @@ Button 3 pressed
 Button 3 released
 ```
 
-## Sony DualShock 4 Connection Information
+## Supported Controllers
 
-When a Sony DualShock 4 (CUH-ZCT2x) controller with ID `054c:09cc` is connected, it is recognized as a "Wireless Controller" by the system. Below is an example of the connection process logged by the system:
+### Sony DualShock 4
 
-### `lsusb` Output:
+When a Sony DualShock 4 (CUH-ZCT2x) controller with ID `054c:09cc` is connected, it is recognized as a "Wireless Controller" by the system.
+
+#### `lsusb` Output:
 
 ```
 Bus 003 Device 009: ID 054c:09cc Sony Corp. DualShock 4 [CUH-ZCT2x]
 ```
 
-### `dmesg` Output:
+#### `dmesg` Output:
 
 ```
 [73828.815810] usb 3-1: new full-speed USB device number 9 using xhci_hcd
@@ -85,28 +86,70 @@ Bus 003 Device 009: ID 054c:09cc Sony Corp. DualShock 4 [CUH-ZCT2x]
 [73829.004874] playstation 0003:054C:09CC.0006: Registered DualShock4 controller hw_version=0x0000a40c fw_version=0x0000904d
 ```
 
-The controller is recognized successfully and registered with motion sensors and a touchpad, using the playstation driver to manage inputs.
+### Sony DualSense
 
-## Sony PS VR Aim Controller Connection Information
+Logs and supports advanced features of the PS5 DualSense controller, including motor vibration control.
 
-When a Sony PS VR Aim Controller with ID `054c:0bb2` is connected, it is recognized by the system. Below is an example of the connection process logged by the system:
+#### `lsusb` Output:
 
-### `lsusb` Output:
+```
+Bus 003 Device 011: ID 054c:0ce6 Sony Corp. DualSense Controller
+```
+
+#### `dmesg` Output:
+
+```
+[85532.752523] usb 3-1: new full-speed USB device number 11 using xhci_hcd
+[85532.879869] usb 3-1: New USB device found, idVendor=054c, idProduct=0ce6, bcdDevice= 1.01
+[85532.879873] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[85532.879874] usb 3-1: Product: DualSense Wireless Controller
+[85532.879875] usb 3-1: Manufacturer: Sony Interactive Entertainment
+[85532.882135] playstation 0003:054C:0CE6.0007: hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment DualSense Wireless Controller] on usb-0000:00:14.0-1/input3
+[85532.935872] input: Sony Interactive Entertainment DualSense Wireless Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.3/0003:054C:0CE6.0007/input/input43
+```
+
+### Sony PS VR Aim Controller
+
+Logs input but does not support motor vibration.
+
+#### `lsusb` Output:
 
 ```
 Bus 003 Device 021: ID 054c:0bb2 Sony Corp. PS VR Aim Controller
 ```
 
-### `dmesg` Output:
+#### `dmesg` Output:
 
 ```
 [100945.809572] usb 3-1: new full-speed USB device number 23 using xhci_hcd
 [100945.936846] usb 3-1: New USB device found, idVendor=054c, idProduct=0bb2, bcdDevice= 1.00
-[100945.936850] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[
+
+100945.936850] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 [100945.936851] usb 3-1: Product: PS VR Aim Controller
 [100945.936852] usb 3-1: Manufacturer: Sony Interactive Entertainment
 [100945.939224] input: Sony Interactive Entertainment PS VR Aim Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:054C:0BB2.0014/input/input70
 [100945.939475] hid-generic 0003:054C:0BB2.0014: input,hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment PS VR Aim Controller] on usb-0000:00:14.0-1/input0
 ```
 
-The controller is recognized successfully by the system as a USB HID gamepad, and the input device is registered with the hid-generic driver.
+### PNX Flight Simulator PC Game Controller
+
+Recognized as a USB HID joystick, logs all inputs from the PNX Flight Simulator PC Game Controller.
+
+#### `lsusb` Output:
+
+```
+Bus 003 Device 037: ID 11ff:3331 PNX Flight Simulator PC Game Controller
+```
+
+#### `dmesg` Output:
+
+```
+[178965.304471] usb 3-1: new low-speed USB device number 37 using xhci_hcd
+[178965.434131] usb 3-1: New USB device found, idVendor=11ff, idProduct=3331, bcdDevice= 1.07
+[178965.434135] usb 3-1: New USB device strings: Mfr=0, Product=2, SerialNumber=0
+[178965.434136] usb 3-1: Product: PC Game Controller
+[178965.438067] gembird 0003:11FF:3331.0030: fixing Gembird JPD-DualForce 2 report descriptor.
+[178965.438139] input: PC Game Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:11FF:3331.0030/input/input79
+[178965.438291] gembird 0003:11FF:3331.0030: input,hidraw0: USB HID v1.10 Joystick [PC Game Controller] on usb-0000:00:14.0-1/input0
+```

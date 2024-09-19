@@ -27,6 +27,7 @@ Usage:
     - PS4 (DualShock 4)
     - PS5 (DualSense)
     - PS VR Aim Controller (input tracking only; vibration not supported)
+    - Gembird/PXN
 """
 
 import os
@@ -65,12 +66,12 @@ class JoystickController:
             sys.exit(1)
 
     def initialize_controller(self):
-        """Initializes Pygame and detects PS4, PS5, or PS VR Aim controller."""
+        """Initializes Pygame and detects PS4, PS5, PS VR Aim, or Gembird controller."""
         pygame.init()
         pygame.joystick.init()
 
         if pygame.joystick.get_count() == 0:
-            print("No controller detected. Please connect your PS4, PS5, or PS VR Aim controller.")
+            print("No controller detected. Please connect your PS4, PS5, PS VR Aim, or Gembird controller.")
             sys.exit()
 
         # Initialize joystick
@@ -88,6 +89,9 @@ class JoystickController:
         elif "PS VR Aim Controller" in controller_name:
             self.controller_type = "PSVR"
             self.initialize_psvr_controller()
+        elif "PC Game Controller" in controller_name or self.joystick.get_id() == (0x11ff, 0x3331):
+            self.controller_type = "Gembird"
+            self.initialize_gembird_controller()
         else:
             print(f"Unsupported controller: {controller_name}")
             sys.exit(1)
@@ -98,22 +102,26 @@ class JoystickController:
         self.last_hat_states = [(0, 0)] * self.joystick.get_numhats()
 
     def initialize_ps5_controller(self):
-        """Initializes the PS5 DualSense controller using pydualsense."""
+        """Initializes the PS5 DualSense controller features."""
         print("Initializing PS5 DualSense controller features.")
         self.ds = pydualsense.pydualsense()
         self.ds.init()
 
     def initialize_ps4_controller(self):
-        """Initializes the PS4 DualShock 4 controller."""
+        """Initializes the PS4 DualShock 4 controller features."""
         print("Initializing PS4 DualShock 4 controller features.")
 
     def initialize_psvr_controller(self):
-        """Initializes the PS VR Aim controller."""
+        """Initializes the PS VR Aim controller features."""
         print("Initializing PS VR Aim Controller features.")
-        # Custom handling for PS VR Aim Controller can be added here
+
+    def initialize_gembird_controller(self):
+        """Initializes the Gembird PC Game Controller."""
+        print("Initializing Gembird PC Game Controller features.")
+        # Custom handling for Gembird controller can be added here, if needed.
 
     def handle_vibration_with_button_10(self):
-        """Handles motor vibration with Button 10 (Options button) for PS4, PS5, or PS VR Aim controllers."""
+        """Handles motor vibration with Button 10 (Options button) for supported controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
 
         if button_10_state != self.last_button_10_state:
@@ -142,8 +150,9 @@ class JoystickController:
         if self.is_motor_vibrating and self.controller_type == "PS4":
             self.joystick.rumble(1.0, 1.0, 0)  # Refresh PS4 rumble for continuous effect
 
+
     def log_inputs(self):
-        """Logs button and analog inputs for PS4, PS5, or PS VR Aim controllers."""
+        """Logs button and analog inputs for the controller."""
         print(f"Controller has {self.joystick.get_numbuttons()} buttons, {self.joystick.get_numaxes()} axes, {self.joystick.get_numhats()} hats (D-pad)")
 
         running = True
@@ -196,6 +205,6 @@ if __name__ == "__main__":
     controller = JoystickController()
     controller.check_sudo()              # Ensure script is run with sudo
     controller.check_vss_dbus_service()  # Ensure vss-dbus is not running
-    controller.initialize_controller()   # Initialize joystick (PS4/PS5/PS VR Aim)
+    controller.initialize_controller()   # Initialize joystick
     controller.log_inputs()              # Start logging inputs
     controller.quit()                    # Clean up when done
