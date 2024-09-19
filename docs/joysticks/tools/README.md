@@ -12,10 +12,11 @@
     - [Stadia Controller (Google)](#stadia-controller-google)
     - [Xbox One Elite 2 Controller](#xbox-one-elite-2-controller)
     - [HORI Racing Wheel Apex](#hori-racing-wheel-apex)
+    - [Valve Software Wired Controller (Steam Controller)](#valve-software-wired-controller-steam-controller)
 
 ## Overview
 
-This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, PNX Flight Simulator PC Game Controller, Xbox One Elite 2 Controller, or HORI Racing Wheel Apex, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
+This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, PNX Flight Simulator PC Game Controller, Xbox One Elite 2 Controller, HORI Racing Wheel Apex, or Valve Software Wired Controller (Steam Controller), tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
 The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
@@ -30,6 +31,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **Stadia Controller Support**: Logs inputs from the Stadia Controller by Google.
 - **Xbox One Elite 2 Controller Support**: Logs inputs from the Xbox One Elite 2 Controller, supporting general input logging.
 - **HORI Racing Wheel Apex Support**: Logs inputs from the HORI Racing Wheel Apex, recognized as a gamepad.
+- **Valve Software Wired Controller (Steam Controller) Support**: Logs inputs from the Steam Controller. Vibration support is not yet implemented.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
 - **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
@@ -39,6 +41,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **pydualsense**: For advanced DualSense controller features (PS5).
 
 To install the dependencies:
+
 ```bash
 pip install pygame pydualsense
 ```
@@ -46,9 +49,12 @@ pip install pygame pydualsense
 ## Usage
 
 Ensure that the `vss-dbus` service is stopped before running the tool:
+
 ```bash
 sudo systemctl stop vss-dbus
 ```
+
+Run the tool with root permissions:
 
 ```bash
 sudo ./gaming-controllers
@@ -118,6 +124,7 @@ Logs input but does not support motor vibration.
 
 ```
 Bus 003 Device 021: ID 054c:0bb2 Sony Corp. PS VR Aim Controller
+[100945.936852] usb 3-1: Manufacturer: Sony Interactive Entertainment
 ```
 
 #### `dmesg` Output:
@@ -203,6 +210,8 @@ Bus 003 Device 039: ID 18d1:9400 Google Stadia Controller
 [182837.014567] usb 3-1: SerialNumber: 9A170YCAC5WNTR
 [182837.017203] input: Google Inc. Stadia Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.1/0003:18D1:9400.0032/input/input83
 [182837.017466] hid-generic 0003:18D1:9400.0032: input,hidraw0: USB HID v1.11 Gamepad [Google Inc. Stadia Controller] on usb-0000:00:14.0-1/input1
+[182837.014565] usb 3-1: Product: Stadia Controller
+[182837.014566] usb 3-1: Manufacturer: Google Inc.
 ```
 
 ### Xbox One Elite 2 Controller
@@ -213,6 +222,11 @@ Logs input from the Xbox One Elite 2 controller.
 
 ```
 Bus 003 Device 041: ID 045e:0b00 Microsoft Corp. Xbox One Elite 2 Controller
+[183717.391820] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[183717.391821] usb 3-1: Product: Controller
+[183717.391821] usb 3-1: Manufacturer: Microsoft
+[183717.391822] usb 3-1: SerialNumber: 3032363330313133383232313433
+[183717.393388] input: Microsoft X-Box One Elite 2 pad as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/input/input86
 ```
 
 #### `dmesg` Output:
@@ -245,6 +259,32 @@ Bus 003 Device 048: ID 0f0d:0156 HORI CO.,LTD. HORI Racing Wheel Apex
 [186875.461359] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 [186875.461360] usb 3-1: Product: HORI Racing Wheel Apex
 [186875.461361] usb 3-1: Manufacturer: HORI CO.,LTD.
-[186875.463351] input: HORI CO.,LTD. HORI Racing Wheel Apex as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:0F0D:0156.0039/input/input93
-[186875.463647] hid-generic 0003:0F0D:0156.0039: input,hiddev96,hidraw0: USB HID v1.11 Gamepad [HORI CO.,LTD. HORI Racing Wheel Apex] on usb-0000:00:14.0-1/input0
+[186875.463351] input: HORI CO.,LTD. HORI Racing Wheel Apex as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0
+003:0F0D:0156.0039/input/input93
+[186875.463647] hid-generic 0003:0F0D:0156.0039: input,hiddev96,hidraw0: USB HID v1.11 Gamepad [HORI CO.,LTD. HORI
+ Racing Wheel Apex] on usb-0000:00:14.0-1/input0
+
+```
+
+### Valve Software Wired Controller (Steam Controller)
+
+The Valve Software Wired Controller (Steam Controller) is supported, and its inputs are logged. While vibration support is not currently implemented, basic input tracking (button and analog stick) is available.
+
+#### `lsusb` Output:
+
+```
+Bus 003 Device 050: ID 28de:1102 Valve Software Wired Controller
+```
+
+#### `dmesg` Output:
+
+```
+[188467.414066] usb 3-1: new full-speed USB device number 50 using xhci_hcd
+[188467.541684] usb 3-1: New USB device found, idVendor=28de, idProduct=1102, bcdDevice= 1.00
+[188467.541689] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[188467.541690] usb 3-1: Product: Wired Controller
+[188467.541691] usb 3-1: Manufacturer: Valve Software
+[188467.543753] input: Valve Software Wired Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:28DE:1102.003E/input/input99
+[188467.595514] hid-steam 0003:28DE:1102.003E: input,hidraw0: USB HID v1.11 Keyboard [Valve Software Wired Controller] on usb-0000:00:14.0-1/input0
+[188467.596074] input: Valve Software Wired Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.1/0003:28DE:1102.003F/input/input100
 ```
