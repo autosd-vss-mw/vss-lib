@@ -11,10 +11,11 @@
     - [Nintendo Switch Pro Controller](#nintendo-switch-pro-controller)
     - [Stadia Controller (Google)](#stadia-controller-google)
     - [Xbox One Elite 2 Controller](#xbox-one-elite-2-controller)
+    - [HORI Racing Wheel Apex](#hori-racing-wheel-apex)
 
 ## Overview
 
-This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, PNX Flight Simulator PC Game Controller, and Xbox One Elite 2 Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
+This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, Stadia Controller, PNX Flight Simulator PC Game Controller, Xbox One Elite 2 Controller, or HORI Racing Wheel Apex, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
 The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
@@ -28,6 +29,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **Nintendo Switch Pro Controller Support**: Logs inputs from the Nintendo Switch Pro Controller.
 - **Stadia Controller Support**: Logs inputs from the Stadia Controller by Google.
 - **Xbox One Elite 2 Controller Support**: Logs inputs from the Xbox One Elite 2 Controller, supporting general input logging.
+- **HORI Racing Wheel Apex Support**: Logs inputs from the HORI Racing Wheel Apex, recognized as a gamepad.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
 - **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
@@ -47,8 +49,6 @@ Ensure that the `vss-dbus` service is stopped before running the tool:
 ```bash
 sudo systemctl stop vss-dbus
 ```
-
-The tool will detect a connected PS4, PS5 (DualSense), Stadia, PNX Flight Simulator, Nintendo Switch Pro, or Xbox One Elite 2 Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
 
 ```bash
 sudo ./gaming-controllers
@@ -128,10 +128,10 @@ Bus 003 Device 021: ID 054c:0bb2 Sony Corp. PS VR Aim Controller
 [100945.936850] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 [100945.936851] usb 3-1: Product: PS VR Aim Controller
 [100945.936852] usb 3-1: Manufacturer: Sony Interactive Entertainment
-[100945.939224] input: Sony Interactive Entertainment PS VR Aim Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:054C:0BB2.0014/input/input70
-[100945.939475] hid-generic 0003:054C:0BB2.0014: input,hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment PS VR Aim Controller] on
+[100945.939224] input: Sony Interactive Entertainment PS VR Aim Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:054C:0BB2.0014/input
 
- usb-0000:00:14.0-1/input0
+/input70
+[100945.939475] hid-generic 0003:054C:0BB2.0014: input,hidraw0: USB HID v1.11 Gamepad [Sony Interactive Entertainment PS VR Aim Controller] on usb-0000:00:14.0-1/input0
 ```
 
 ### PNX Flight Simulator PC Game Controller
@@ -225,4 +225,26 @@ Bus 003 Device 041: ID 045e:0b00 Microsoft Corp. Xbox One Elite 2 Controller
 [183717.391821] usb 3-1: Manufacturer: Microsoft
 [183717.391822] usb 3-1: SerialNumber: 3032363330313133383232313433
 [183717.393388] input: Microsoft X-Box One Elite 2 pad as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/input/input86
+```
+
+### HORI Racing Wheel Apex
+
+Recognized as a USB HID gamepad, logs inputs from the HORI Racing Wheel Apex.
+
+#### `lsusb` Output:
+
+```
+Bus 003 Device 048: ID 0f0d:0156 HORI CO.,LTD. HORI Racing Wheel Apex
+```
+
+#### `dmesg` Output:
+
+```
+[186875.331973] usb 3-1: new full-speed USB device number 48 using xhci_hcd
+[186875.461355] usb 3-1: New USB device found, idVendor=0f0d, idProduct=0156, bcdDevice= 1.15
+[186875.461359] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[186875.461360] usb 3-1: Product: HORI Racing Wheel Apex
+[186875.461361] usb 3-1: Manufacturer: HORI CO.,LTD.
+[186875.463351] input: HORI CO.,LTD. HORI Racing Wheel Apex as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:0F0D:0156.0039/input/input93
+[186875.463647] hid-generic 0003:0F0D:0156.0039: input,hiddev96,hidraw0: USB HID v1.11 Gamepad [HORI CO.,LTD. HORI Racing Wheel Apex] on usb-0000:00:14.0-1/input0
 ```

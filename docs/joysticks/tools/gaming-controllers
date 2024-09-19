@@ -14,8 +14,8 @@
 
 """
 Usage:
-    This script detects a connected PS4, PS5, PS VR Aim, Gembird, Nintendo Switch Pro, Stadia, or Xbox One Elite 2 controller,
-    tracks inputs, and controls features such as motor vibration for supported controllers.
+    This script detects a connected PS4, PS5, PS VR Aim, Gembird, Nintendo Switch Pro, Stadia, Xbox One Elite 2,
+    or HORI Racing Wheel Apex controller, tracks inputs, and controls features such as motor vibration for supported controllers.
     It ensures that the vss-dbus service is not running to avoid conflicts with the joystick device.
 
     Ensure the vss-dbus service is stopped before running this tool:
@@ -32,6 +32,7 @@ Usage:
     - Nintendo Switch Pro Controller
     - Stadia Controller (Google)
     - Xbox One Elite 2 Controller
+    - HORI Racing Wheel Apex
 """
 
 import os
@@ -39,7 +40,6 @@ import sys
 import signal
 import pygame
 import pydualsense  # For PS5 DualSense controller
-
 
 class JoystickController:
     AXIS_THRESHOLD = 0.05  # Threshold to avoid small fluctuations
@@ -105,6 +105,9 @@ class JoystickController:
         elif "Xbox One Elite" in controller_name or "Microsoft" in controller_name:
             self.controller_type = "Xbox"
             self.initialize_xbox_controller()
+        elif "HORI Racing Wheel Apex" in controller_name:
+            self.controller_type = "HORI"
+            self.initialize_hori_controller()
         else:
             print(f"Unsupported controller: {controller_name}")
             sys.exit(1)
@@ -148,6 +151,11 @@ class JoystickController:
         print("Initializing Xbox One Elite 2 controller features.")
         # If vibration support is available for Xbox controller, it can be implemented here
 
+    def initialize_hori_controller(self):
+        """Initializes the HORI Racing Wheel Apex controller features."""
+        print("Initializing HORI Racing Wheel Apex features.")
+        # Custom handling for HORI Racing Wheel Apex can be added here.
+
     def handle_vibration_with_button_10(self):
         """Handles motor vibration with Button 10 (Options button) for supported controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
@@ -170,6 +178,8 @@ class JoystickController:
                         print("Vibration support for Nintendo Switch Pro is not implemented.")
                     elif self.controller_type == "Stadia":
                         print("Vibration support for Stadia Controller is not implemented.")
+                    elif self.controller_type == "HORI":
+                        print("Vibration support for HORI Racing Wheel Apex is not implemented.")
                     self.is_motor_vibrating = True
                 else:
                     print("Stopping motor vibration with Button 10")
