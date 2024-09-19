@@ -8,10 +8,11 @@
     - [Sony DualSense](#sony-dualsense)
     - [Sony PS VR Aim Controller](#sony-ps-vr-aim-controller)
     - [PNX Flight Simulator PC Game Controller](#pnx-flight-simulator-pc-game-controller)
+    - [Nintendo Switch Pro Controller](#nintendo-switch-pro-controller)
 
 ## Overview
 
-This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, and the PNX Flight Simulator PC Game Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
+This tool detects connected PS4, PS5 (DualSense), PS VR Aim controllers, Nintendo Switch Pro Controller, and the PNX Flight Simulator PC Game Controller, tracks their inputs, and manages the special features of the DualSense controller (PS5). It is built using Pygame for general input handling and pydualsense for controlling the advanced features of the PS5 DualSense controller.
 
 The tool also checks if the `vss-dbus` service is running, which could cause conflicts with the joystick device, and exits if the service is active.
 
@@ -22,6 +23,7 @@ The tool also checks if the `vss-dbus` service is running, which could cause con
 - **DualSense Controller Features**: Leverages the pydualsense library to manage advanced features of the PS5 DualSense controller, including motor control.
 - **PS VR Aim Controller Support**: Logs inputs from the PS VR Aim Controller. Vibration is currently not supported for this device.
 - **PNX Flight Simulator PC Game Controller Support**: Logs inputs from the PNX Flight Simulator PC Game Controller.
+- **Nintendo Switch Pro Controller Support**: Logs inputs from the Nintendo Switch Pro Controller.
 - **vss-dbus Conflict Detection**: Ensures the tool does not run if the `vss-dbus` service is active to avoid device conflicts.
 - **Graceful Exit**: The tool handles `Ctrl + C` signals to exit gracefully, stopping any active vibration and releasing resources.
 
@@ -42,21 +44,17 @@ Ensure that the `vss-dbus` service is stopped before running the tool:
 sudo systemctl stop vss-dbus
 ```
 
-The tool will detect a connected PS4, PS5 (DualSense), or PNX Flight Simulator PC Game Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
+The tool will detect a connected PS4, PS5 (DualSense), PNX Flight Simulator, or Nintendo Switch Pro Controller, log its inputs, and allow motor vibration control for PS4 and PS5 controllers.
 
 ```bash
-sudo ./ps-controllers-pygame
+sudo ./gaming-controllers
 pygame 2.6.0 (SDL 2.28.4, Python 3.12.5)
 Hello from the pygame community. https://www.pygame.org/contribute.html
-Detected controller: Sony Interactive Entertainment Wireless Controller
-['DpadDown', 'DpadLeft', 'DpadRight', 'DpadUp', 'L1', 'L2', 'L2Btn', 'L3', 'LX', 'LY', 'R1', 'R2', 'R2Btn', 'R3', 'RX', 'RY', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'accelerometer', 'circle', 'cross', 'gyro', 'micBtn', 'options', 'ps', 'setDPadState', 'share', 'square', 'touch1', 'touch2', 'touchBtn', 'touchFinger1', 'touchFinger2', 'touchLeft', 'touchRight', 'trackPadTouch0', 'trackPadTouch1', 'triangle']
+Detected controller: Nintendo Co., Ltd. Pro Controller
 Controller has 13 buttons, 6 axes, 1 hats (D-pad)
 Axis 2 moved to -1.000
-Axis 5 moved to -1.000
 Button 0 pressed
 Button 0 released
-Button 3 pressed
-Button 3 released
 ```
 
 ## Supported Controllers
@@ -123,9 +121,7 @@ Bus 003 Device 021: ID 054c:0bb2 Sony Corp. PS VR Aim Controller
 ```
 [100945.809572] usb 3-1: new full-speed USB device number 23 using xhci_hcd
 [100945.936846] usb 3-1: New USB device found, idVendor=054c, idProduct=0bb2, bcdDevice= 1.00
-[
-
-100945.936850] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[100945.936850] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
 [100945.936851] usb 3-1: Product: PS VR Aim Controller
 [100945.936852] usb 3-1: Manufacturer: Sony Interactive Entertainment
 [100945.939224] input: Sony Interactive Entertainment PS VR Aim Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:054C:0BB2.0014/input/input70
@@ -142,7 +138,9 @@ Recognized as a USB HID joystick, logs all inputs from the PNX Flight Simulator 
 Bus 003 Device 037: ID 11ff:3331 PNX Flight Simulator PC Game Controller
 ```
 
-#### `dmesg` Output:
+#### `dmes
+
+g` Output:
 
 ```
 [178965.304471] usb 3-1: new low-speed USB device number 37 using xhci_hcd
@@ -152,4 +150,30 @@ Bus 003 Device 037: ID 11ff:3331 PNX Flight Simulator PC Game Controller
 [178965.438067] gembird 0003:11FF:3331.0030: fixing Gembird JPD-DualForce 2 report descriptor.
 [178965.438139] input: PC Game Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:11FF:3331.0030/input/input79
 [178965.438291] gembird 0003:11FF:3331.0030: input,hidraw0: USB HID v1.10 Joystick [PC Game Controller] on usb-0000:00:14.0-1/input0
+```
+
+### Nintendo Switch Pro Controller
+
+Logs input from the Nintendo Switch Pro Controller.
+
+#### `lsusb` Output:
+
+```
+Bus 003 Device 038: ID 057e:2009 Nintendo Co., Ltd. Switch Pro Controller
+```
+
+#### `dmesg` Output:
+
+```
+[180762.873610] usb 3-1: new full-speed USB device number 38 using xhci_hcd
+[180763.001848] usb 3-1: New USB device found, idVendor=057e, idProduct=2009, bcdDevice= 2.10
+[180763.001852] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[180763.001853] usb 3-1: Product: Pro Controller
+[180763.001854] usb 3-1: Manufacturer: Nintendo Co., Ltd.
+[180763.001855] usb 3-1: SerialNumber: 000000000001
+[180763.004299] input: Nintendo Co., Ltd. Pro Controller as /devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/0003:057E:2009.0031/input/input80
+[180763.004575] hid-generic 0003:057E:2009.0031: input,hidraw0: USB HID v1.11 Joystick [Nintendo Co., Ltd. Pro Controller] on usb-0000:00:14.0-1/input0
+[180763.607894] nintendo 0003:057E:2009.0031: hidraw0: USB HID v81.11 Joystick [Nintendo Co., Ltd. Pro Controller] on usb-0000:00:14.0-1/input0
+[180764.466024] nintendo 0003:057E:2009.0031: controller MAC = 98:41:5C:35:6A:DC
+[180764.498042] nintendo 0003:057E:2009.0031: using factory cal for left stick
 ```

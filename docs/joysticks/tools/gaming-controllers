@@ -14,9 +14,9 @@
 
 """
 Usage:
-    This script detects a connected PS4, PS5, or PS VR Aim controller, tracks inputs, and controls
-    features such as motor vibration for DualSense (PS5) and DualShock 4 (PS4) controllers. It ensures
-    that the vss-dbus service is not running to avoid conflicts with the joystick device.
+    This script detects a connected PS4, PS5, PS VR Aim, Gembird, or Nintendo Switch Pro controller,
+    tracks inputs, and controls features such as motor vibration for supported controllers.
+    It ensures that the vss-dbus service is not running to avoid conflicts with the joystick device.
 
     Ensure the vss-dbus service is stopped before running this tool:
         sudo systemctl stop vss-dbus
@@ -29,6 +29,7 @@ Usage:
     - PS5 (DualSense)
     - PS VR Aim Controller (input tracking only; vibration not supported)
     - Gembird/PXN
+    - Nintendo Switch Pro Controller
 """
 
 import os
@@ -67,16 +68,16 @@ class JoystickController:
             sys.exit(1)
 
     def initialize_controller(self):
-        """Initializes Pygame and detects PS4, PS5, PS VR Aim, or Gembird controller."""
+        """Initializes Pygame and detects supported controllers."""
         pygame.init()
         pygame.joystick.init()
 
         if pygame.joystick.get_count() == 0:
-            print("No controller detected. Please connect your PS4, PS5, PS VR Aim, or Gembird controller.")
+            print("No controller detected. Please connect your controller.")
             sys.exit()
 
         # Initialize joystick
-        self.joystick = pygame.joystick.Joystick(0)  # Assuming the controller is the first joystick
+        self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
         controller_name = self.joystick.get_name()
         print(f"Detected controller: {controller_name}")
@@ -93,6 +94,9 @@ class JoystickController:
         elif "PC Game Controller" in controller_name or self.joystick.get_id() == (0x11ff, 0x3331):
             self.controller_type = "Gembird"
             self.initialize_gembird_controller()
+        elif "Pro Controller" in controller_name:
+            self.controller_type = "Nintendo"
+            self.initialize_nintendo_controller()
         else:
             print(f"Unsupported controller: {controller_name}")
             sys.exit(1)
@@ -121,6 +125,11 @@ class JoystickController:
         print("Initializing Gembird PC Game Controller features.")
         # Custom handling for Gembird controller can be added here, if needed.
 
+    def initialize_nintendo_controller(self):
+        """Initializes the Nintendo Switch Pro Controller."""
+        print("Initializing Nintendo Switch Pro Controller features.")
+        # Custom handling for Nintendo Switch Pro Controller can be added here if needed.
+
     def handle_vibration_with_button_10(self):
         """Handles motor vibration with Button 10 (Options button) for supported controllers."""
         button_10_state = self.joystick.get_button(10)  # Button 10 (Options button)
@@ -136,6 +145,8 @@ class JoystickController:
                         self.joystick.rumble(1.0, 1.0, 0)  # Start PS4 rumble with infinite duration
                     elif self.controller_type == "PSVR":
                         print("Vibration support for PS VR Aim is not implemented.")
+                    elif self.controller_type == "Nintendo":
+                        print("Vibration support for Nintendo Switch Pro is not implemented.")
                     self.is_motor_vibrating = True
                 else:
                     print("Stopping motor vibration with Button 10")
