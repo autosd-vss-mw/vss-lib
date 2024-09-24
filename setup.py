@@ -295,7 +295,8 @@ setup(
         "pyyaml",
         "invoke",
         "pygame",
-        "pydualsense"
+        "pydualsense",
+        "python-can"
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files
