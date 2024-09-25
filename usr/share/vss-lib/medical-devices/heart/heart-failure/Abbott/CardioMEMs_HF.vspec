@@ -1,0 +1,84 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# 
+Device:
+  Type: Medical
+  Vendor: Abbott
+  Model: CardioMEMS HF System
+  Year: 2024
+  Signals:
+    HeartRate:
+      CurrentRate:
+        datatype: uint8
+        unit: beats_per_minute
+        description: Current heart rate of the patient
+      MaxRate:
+        datatype: uint8
+        unit: beats_per_minute
+        description: Maximum heart rate recorded within a time window
+      MinRate:
+        datatype: uint8
+        unit: beats_per_minute
+        description: Minimum heart rate recorded within a time window
+      AverageRate:
+        datatype: float
+        unit: beats_per_minute
+        description: Average heart rate over a time period
+    PulmonaryArteryPressure:
+      SystolicPressure:
+        datatype: float
+        unit: millimeters_of_mercury
+        description: Pulmonary artery systolic pressure
+      DiastolicPressure:
+        datatype: float
+        unit: millimeters_of_mercury
+        description: Pulmonary artery diastolic pressure
+      MeanPressure:
+        datatype: float
+        unit: millimeters_of_mercury
+        description: Mean pulmonary artery pressure
+    ActivityLevel:
+      StepsCount:
+        datatype: uint16
+        unit: steps
+        description: Number of steps taken by the patient
+      ActivityDuration:
+        datatype: float
+        unit: minutes
+        description: Duration of physical activity
+    DeviceBattery:
+      BatteryLevel:
+        datatype: float
+        unit: percent
+        description: Remaining battery level of the device
+      ChargingStatus:
+        datatype: bool
+        description: True if the device is charging, False otherwise
+    Alerts:
+      HeartRateAlert:
+        datatype: bool
+        description: True if heart rate is outside safe range
+      PressureAlert:
+        datatype: bool
+        description: True if pulmonary pressure is outside safe range
+      DeviceBatteryLow:
+        datatype: bool
+        description: True if device battery is low
+    Communication:
+      SignalStrength:
+        datatype: float
+        unit: percent
+        description: Strength of the wireless communication signal
+      LastSyncTime:
+        datatype: string
+        unit: timestamp
+        description: Timestamp of the last successful data sync
