@@ -1,0 +1,105 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Train
+  Brand: Hitachi
+  Model: A-Train
+  Year: 2024
+  Signals:
+    Engine:
+      PowerOutput:
+        datatype: float
+        unit: megawatts
+        description: Total power output of the train engine
+      Temperature:
+        datatype: float
+        unit: celsius
+        description: Engine temperature in Celsius
+      Efficiency:
+        datatype: float
+        unit: percent
+        description: Engine efficiency as a percentage
+    Speed:
+      CurrentSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Current train speed in kilometers per hour
+      MaxSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Maximum allowed speed for this train model
+    Brakes:
+      BrakeForce:
+        datatype: float
+        unit: kilonewtons
+        description: Force applied by the braking system
+      BrakeStatus:
+        datatype: bool
+        description: True if brakes are applied, False otherwise
+    Location:
+      Latitude:
+        datatype: float
+        unit: degrees
+        description: Train's current latitude in decimal degrees
+      Longitude:
+        datatype: float
+        unit: degrees
+        description: Train's current longitude in decimal degrees
+    Fuel:
+      ElectricityUsage:
+        datatype: float
+        unit: kilowatt_hours
+        description: Total electricity consumed by the train
+    Passenger:
+      Count:
+        datatype: uint16
+        description: Number of passengers currently on the train
+      Capacity:
+        datatype: uint16
+        description: Maximum passenger capacity of the train
+    HVAC:
+      CabinTemperature:
+        datatype: float
+        unit: celsius
+        description: Current temperature inside the passenger cabin
+      AirFlowRate:
+        datatype: float
+        unit: cubic_meters_per_minute
+        description: Airflow rate of the HVAC system
+    Door:
+      Status:
+        datatype: bool
+        description: True if doors are open, False if doors are closed
+    Safety:
+      EmergencyBrakeStatus:
+        datatype: bool
+        description: True if emergency brakes are applied
+      FireAlarm:
+        datatype: bool
+        description: True if the fire alarm is triggered
+    Communication:
+      WiFiStatus:
+        datatype: bool
+        description: True if passenger WiFi is active, False otherwise
+      IntercomStatus:
+        datatype: bool
+        description: True if intercom system is functional
+    Electrical:
+      BatteryVoltage:
+        datatype: float
+        unit: volts
+        description: Voltage of onboard batteries
+      AlternatorOutput:
+        datatype: float
+        unit: amps
+        description: Alternator output in amps

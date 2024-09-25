@@ -1,0 +1,122 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Train
+  Brand: Kawasaki Heavy Industries
+  Model: EfSET
+  Year: 2024
+  Signals:
+    Engine:
+      PowerOutput:
+        datatype: float
+        unit: megawatts
+        description: Total power output of the EfSET train engine
+      Temperature:
+        datatype: float
+        unit: celsius
+        description: Engine temperature in Celsius
+      Efficiency:
+        datatype: float
+        unit: percent
+        description: Engine efficiency in terms of power usage
+      RegenerativeBrakingEnergy:
+        datatype: float
+        unit: kilowatt_hours
+        description: Energy recovered through regenerative braking
+    Speed:
+      CurrentSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Current speed of the EfSET in kilometers per hour
+      MaxSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Maximum operational speed of the train
+    Brakes:
+      BrakeForce:
+        datatype: float
+        unit: kilonewtons
+        description: Braking force applied to slow down the train
+      RegenerativeBrakingStatus:
+        datatype: bool
+        description: True if regenerative braking is active, False otherwise
+    Location:
+      Latitude:
+        datatype: float
+        unit: degrees
+        description: Train's latitude in decimal degrees
+      Longitude:
+        datatype: float
+        unit: degrees
+        description: Train's longitude in decimal degrees
+    Fuel:
+      ElectricityConsumption:
+        datatype: float
+        unit: kilowatt_hours
+        description: Electricity consumed by the train
+      EnergyRecovery:
+        datatype: float
+        unit: kilowatt_hours
+        description: Total energy recovered through regenerative systems
+    Passenger:
+      Count:
+        datatype: uint16
+        description: Current number of passengers on board
+      Capacity:
+        datatype: uint16
+        description: Maximum passenger capacity
+    HVAC:
+      CabinTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature inside the passenger cabins
+      HumidityLevel:
+        datatype: float
+        unit: percent
+        description: Humidity level in the passenger cabin
+    Door:
+      Status:
+        datatype: bool
+        description: True if doors are open, False if closed
+    Safety:
+      EmergencyBrakeStatus:
+        datatype: bool
+        description: True if emergency brakes are applied
+      FireAlarm:
+        datatype: bool
+        description: True if a fire alarm is triggered
+    Communication:
+      WiFiStatus:
+        datatype: bool
+        description: True if WiFi service is active, False otherwise
+      IntercomStatus:
+        datatype: bool
+        description: Status of the intercom system
+    Electrical:
+      BatteryVoltage:
+        datatype: float
+        unit: volts
+        description: Voltage of the onboard batteries
+      SolarPanelOutput:
+        datatype: float
+        unit: kilowatts
+        description: Output from onboard solar panels (if equipped)
+    Environmental:
+      CO2Reduction:
+        datatype: float
+        unit: percent
+        description: Percentage of CO2 reduction through green energy usage
+      NoiseLevel:
+        datatype: float
+        unit: decibels
+        description: External noise level during operation
