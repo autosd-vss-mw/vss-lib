@@ -303,7 +303,8 @@ setup(
         "invoke",
         "pygame",
         "pydualsense",
-        "python-can"
+        "python-can",
+        "vss-tools"
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files
