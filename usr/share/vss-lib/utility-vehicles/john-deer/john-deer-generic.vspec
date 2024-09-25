@@ -1,0 +1,91 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Tractor
+  Brand: John Deere
+  Signals:
+    Engine:
+      RPM:
+        datatype: uint16
+        unit: revolutions_per_minute
+        description: Engine revolutions per minute
+      Temperature:
+        datatype: float
+        unit: celsius
+        description: Engine temperature in Celsius
+      OilPressure:
+        datatype: float
+        unit: bar
+        description: Engine oil pressure in bar
+    Hydraulics:
+      Pressure:
+        datatype: float
+        unit: bar
+        description: Hydraulic system pressure
+      FlowRate:
+        datatype: float
+        unit: liters_per_minute
+        description: Hydraulic flow rate
+    Transmission:
+      Gear:
+        datatype: int8
+        description: Current gear position
+      OilTemperature:
+        datatype: float
+        unit: celsius
+        description: Transmission oil temperature
+    Speed:
+      WheelSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Speed of the wheels in km/h
+    Fuel:
+      Level:
+        datatype: float
+        unit: percent
+        description: Fuel level in percentage
+    Electrical:
+      BatteryVoltage:
+        datatype: float
+        unit: volts
+        description: Battery voltage in volts
+      AlternatorOutput:
+        datatype: float
+        unit: amps
+        description: Alternator output in amps
+    Location:
+      Latitude:
+        datatype: float
+        unit: degrees
+        description: Vehicle latitude in decimal degrees
+      Longitude:
+        datatype: float
+        unit: degrees
+        description: Vehicle longitude in decimal degrees
+    TirePressure:
+      FrontLeft:
+        datatype: float
+        unit: bar
+        description: Pressure of the front left tire in bar
+      FrontRight:
+        datatype: float
+        unit: bar
+        description: Pressure of the front right tire in bar
+      RearLeft:
+        datatype: float
+        unit: bar
+        description: Pressure of the rear left tire in bar
+      RearRight:
+        datatype: float
+        unit: bar
+        description: Pressure of the rear right tire in bar

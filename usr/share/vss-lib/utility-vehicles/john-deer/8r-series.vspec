@@ -1,0 +1,100 @@
+# JohnDeere8R.vspec
+Vehicle:
+  Type: Tractor
+  Brand: John Deere
+  Model: 8R
+  Year: 2024
+  Signals:
+    Engine:
+      RPM:
+        datatype: uint16
+        unit: revolutions_per_minute
+        description: 8R engine revolutions per minute
+      Temperature:
+        datatype: float
+        unit: celsius
+        description: 8R engine temperature in Celsius
+      OilPressure:
+        datatype: float
+        unit: bar
+        description: 8R engine oil pressure in bar
+      Power:
+        datatype: float
+        unit: kilowatt
+        description: Engine power output in kilowatts
+    Hydraulics:
+      Pressure:
+        datatype: float
+        unit: bar
+        description: 8R hydraulic system pressure
+      FlowRate:
+        datatype: float
+        unit: liters_per_minute
+        description: 8R hydraulic flow rate
+      LiftCapacity:
+        datatype: float
+        unit: kilograms
+        description: Maximum lifting capacity of the hydraulic system
+    Transmission:
+      Gear:
+        datatype: int8
+        description: Current gear position (1-16 forward, R1-R6 reverse)
+      OilTemperature:
+        datatype: float
+        unit: celsius
+        description: 8R transmission oil temperature
+      PowerShift:
+        datatype: bool
+        description: Power shift engagement indicator
+    Speed:
+      WheelSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Speed of the 8R wheels in km/h
+    Fuel:
+      Level:
+        datatype: float
+        unit: percent
+        description: 8R fuel level in percentage
+      UsageRate:
+        datatype: float
+        unit: liters_per_hour
+        description: Fuel consumption rate in liters per hour
+    Electrical:
+      BatteryVoltage:
+        datatype: float
+        unit: volts
+        description: 8R battery voltage in volts
+      AlternatorOutput:
+        datatype: float
+        unit: amps
+        description: 8R alternator output in amps
+      Lighting:
+        datatype: bool
+        description: Headlight and rear light status
+    Location:
+      Latitude:
+        datatype: float
+        unit: degrees
+        description: 8R vehicle latitude in decimal degrees
+      Longitude:
+        datatype: float
+        unit: degrees
+        description: 8R vehicle longitude in decimal degrees
+    TirePressure:
+      FrontLeft:
+        datatype: float
+        unit: bar
+        description: Pressure of the front left tire in bar for the 8R
+      FrontRight:
+        datatype: float
+        unit: bar
+        description: Pressure of the front right tire in bar for the 8R
+      RearLeft:
+        datatype: float
+        unit: bar
+        description: Pressure of the rear left tire in bar for the 8R
+      RearRight:
+        datatype: float
+        unit: bar
+        description: Pressure of the rear right tire in bar for the 8R
