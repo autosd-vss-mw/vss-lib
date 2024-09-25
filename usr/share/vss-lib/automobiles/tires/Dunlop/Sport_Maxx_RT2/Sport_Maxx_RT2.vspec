@@ -1,0 +1,66 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Dunlop Sport Maxx RT 2 Tire VSS (Vehicle Signal Specification)
+vspec:
+  name: Dunlop_Sport_Maxx_RT_2
+  type: branch
+  description: Signals related to Dunlop Sport Maxx RT 2 tires
+
+  children:
+    pressure:
+      type: sensor
+      datatype: float
+      unit: "kPa"
+      description: "Tire pressure for Dunlop Sport Maxx RT 2"
+      min: 0
+      max: 450
+      accuracy: "±5kPa"
+      vendor_specific:
+        vendor: "Dunlop"
+        model: "Sport Maxx RT 2"
+        sensor_type: "PressureSensor"
+
+    temperature:
+      type: sensor
+      datatype: float
+      unit: "Celsius"
+      description: "Tire temperature for Dunlop Sport Maxx RT 2"
+      min: -40
+      max: 130
+      accuracy: "±2°C"
+      vendor_specific:
+        vendor: "Dunlop"
+        model: "Sport Maxx RT 2"
+        sensor_type: "TemperatureSensor"
+
+    tread_depth:
+      type: sensor
+      datatype: float
+      unit: "mm"
+      description: "Tread depth for Dunlop Sport Maxx RT 2"
+      min: 0
+      max: 10
+      accuracy: "±0.1mm"
+      vendor_specific:
+        vendor: "Dunlop"
+        model: "Sport Maxx RT 2"
+        sensor_type: "DepthSensor"
+
+    wear_indicator:
+      type: sensor
+      datatype: boolean
+      description: "Tire wear indicator for Dunlop Sport Maxx RT 2"
+      vendor_specific:
+        vendor: "Dunlop"
+        model: "Sport Maxx RT 2"
+        sensor_type: "WearIndicator"
