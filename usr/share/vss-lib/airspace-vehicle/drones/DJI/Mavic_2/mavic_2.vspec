@@ -1,0 +1,131 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Drone
+  Brand: DJI
+  Model: Mavic 2
+  Year: 2024
+  Signals:
+    Flight:
+      Altitude:
+        datatype: float
+        unit: meters
+        description: Current altitude of the drone above ground level
+      VerticalSpeed:
+        datatype: float
+        unit: meters_per_second
+        description: Rate of ascent or descent of the drone
+      HorizontalSpeed:
+        datatype: float
+        unit: kilometers_per_hour
+        description: Horizontal speed of the drone
+      GPSAccuracy:
+        datatype: float
+        unit: meters
+        description: GPS accuracy in meters
+      FlightMode:
+        datatype: string
+        description: Current flight mode (e.g., Manual, GPS, ATTI, Sport)
+    Propulsion:
+      MotorRPM:
+        datatype: uint16
+        unit: revolutions_per_minute
+        description: Revolutions per minute of each drone motor
+      BatteryLevel:
+        datatype: float
+        unit: percent
+        description: Remaining battery level as a percentage
+      Voltage:
+        datatype: float
+        unit: volts
+        description: Voltage of the propulsion system
+    Location:
+      Latitude:
+        datatype: float
+        unit: degrees
+        description: Drone’s current latitude in decimal degrees
+      Longitude:
+        datatype: float
+        unit: degrees
+        description: Drone’s current longitude in decimal degrees
+    Camera:
+      TiltAngle:
+        datatype: float
+        unit: degrees
+        description: Tilt angle of the gimbal-mounted camera
+      ZoomLevel:
+        datatype: float
+        unit: x
+        description: Zoom level of the camera
+      Resolution:
+        datatype: string
+        description: Camera resolution (e.g., 4K, 1080p)
+      CameraStatus:
+        datatype: bool
+        description: True if the camera is active, False if inactive
+    Sensors:
+      ObstacleDistanceFront:
+        datatype: float
+        unit: meters
+        description: Distance to the nearest obstacle in front of the drone
+      ObstacleDistanceRear:
+        datatype: float
+        unit: meters
+        description: Distance to the nearest obstacle behind the drone
+      ObstacleDistanceLeft:
+        datatype: float
+        unit: meters
+        description: Distance to the nearest obstacle to the left of the drone
+      ObstacleDistanceRight:
+        datatype: float
+        unit: meters
+        description: Distance to the nearest obstacle to the right of the drone
+      WindSpeed:
+        datatype: float
+        unit: meters_per_second
+        description: Current wind speed affecting the drone
+      Temperature:
+        datatype: float
+        unit: celsius
+        description: Current external temperature around the drone
+    Communication:
+      SignalStrength:
+        datatype: float
+        unit: percent
+        description: Strength of the communication signal between the drone and the remote controller
+      VideoTransmissionStatus:
+        datatype: bool
+        description: True if live video transmission is active, False otherwise
+    Safety:
+      BatteryTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature of the drone's battery
+      ReturnToHomeStatus:
+        datatype: bool
+        description: True if the Return-to-Home feature is activated
+      EmergencyLandingStatus:
+        datatype: bool
+        description: True if the drone is in emergency landing mode
+    Gimbal:
+      StabilizationStatus:
+        datatype: bool
+        description: True if gimbal stabilization is active, False otherwise
+      RollAngle:
+        datatype: float
+        unit: degrees
+        description: Current roll angle of the gimbal
+      PitchAngle:
+        datatype: float
+        unit: degrees
+        description: Current pitch angle of the gimbal
