@@ -1,0 +1,140 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Rocket
+  Vendor: NASA
+  Model: Space Launch System (SLS)
+  Year: 2024
+  Signals:
+    Propulsion:
+      EngineThrust:
+        datatype: float
+        unit: kilonewtons
+        description: Thrust produced by the RS-25 engines
+      FuelFlowRate:
+        datatype: float
+        unit: kilograms_per_second
+        description: Fuel flow rate to the RS-25 engines
+      OxidizerFlowRate:
+        datatype: float
+        unit: kilograms_per_second
+        description: Oxidizer flow rate to the RS-25 engines
+      ChamberPressure:
+        datatype: float
+        unit: bar
+        description: Pressure in the RS-25 engine combustion chambers
+      EngineTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature of the RS-25 engines during operation
+      BoosterThrust:
+        datatype: float
+        unit: kilonewtons
+        description: Thrust produced by the solid rocket boosters
+    Flight:
+      Altitude:
+        datatype: float
+        unit: kilometers
+        description: Current altitude of the rocket
+      Velocity:
+        datatype: float
+        unit: meters_per_second
+        description: Current velocity of the rocket
+      Acceleration:
+        datatype: float
+        unit: meters_per_second_squared
+        description: Current acceleration of the rocket
+      Heading:
+        datatype: float
+        unit: degrees
+        description: Heading direction of the rocket
+      Pitch:
+        datatype: float
+        unit: degrees
+        description: Pitch angle of the rocket
+      Roll:
+        datatype: float
+        unit: degrees
+        description: Roll angle of the rocket
+      Yaw:
+        datatype: float
+        unit: degrees
+        description: Yaw angle of the rocket
+    Fuel:
+      FuelLevel:
+        datatype: float
+        unit: percent
+        description: Remaining fuel level in the core stage tanks
+      OxidizerLevel:
+        datatype: float
+        unit: percent
+        description: Remaining oxidizer level in the core stage tanks
+    Stage:
+      CoreStageSeparationStatus:
+        datatype: bool
+        description: True if the core stage has separated
+      BoosterSeparationStatus:
+        datatype: bool
+        description: True if the solid rocket boosters have separated
+    Safety:
+      TemperatureWarning:
+        datatype: bool
+        description: True if any system temperature exceeds safe limits
+      PressureWarning:
+        datatype: bool
+        description: True if any critical pressure exceeds safe limits
+      EmergencyAbortStatus:
+        datatype: bool
+        description: True if an emergency abort sequence has been initiated
+    Communication:
+      TelemetrySignalStrength:
+        datatype: float
+        unit: percent
+        description: Strength of the telemetry signal to ground control
+      CommandStatus:
+        datatype: string
+        description: Status of the command uplink (Nominal, Delayed, Failed)
+    Navigation:
+      GPSLatitude:
+        datatype: float
+        unit: degrees
+        description: Latitude from GPS tracking
+      GPSLongitude:
+        datatype: float
+        unit: degrees
+        description: Longitude from GPS tracking
+      GPSAltitude:
+        datatype: float
+        unit: kilometers
+        description: Altitude from GPS tracking
+    Battery:
+      BatteryVoltage:
+        datatype: float
+        unit: volts
+        description: Voltage of onboard battery systems
+      BatteryTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature of onboard batteries
+    Payload:
+      PayloadTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature inside the payload bay
+      PayloadDoorStatus:
+        datatype: bool
+        description: True if payload doors are open
+    Recovery:
+      ParachuteDeploymentStatus:
+        datatype: bool
+        description: True if parachutes have deployed for the core stage

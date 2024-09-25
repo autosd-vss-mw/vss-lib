@@ -1,0 +1,142 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Rocket
+  Vendor: SpaceX
+  Model: Falcon 9
+  Year: 2024
+  Signals:
+    Propulsion:
+      EngineThrust:
+        datatype: float
+        unit: kilonewtons
+        description: Current thrust produced by each Merlin engine
+      FuelFlowRate:
+        datatype: float
+        unit: kilograms_per_second
+        description: Rate of fuel consumption in kilograms per second
+      OxidizerFlowRate:
+        datatype: float
+        unit: kilograms_per_second
+        description: Rate of oxidizer consumption in kilograms per second
+      ChamberPressure:
+        datatype: float
+        unit: bar
+        description: Pressure inside the combustion chamber of each engine
+      EngineTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature of each engine during operation
+      EngineStatus:
+        datatype: string
+        description: Status of each Merlin engine (Nominal, Shutdown, Failure)
+    Flight:
+      Altitude:
+        datatype: float
+        unit: kilometers
+        description: Current altitude of the rocket
+      Velocity:
+        datatype: float
+        unit: meters_per_second
+        description: Current velocity of the rocket
+      Acceleration:
+        datatype: float
+        unit: meters_per_second_squared
+        description: Current acceleration of the rocket
+      Heading:
+        datatype: float
+        unit: degrees
+        description: Current heading of the rocket in degrees
+      Pitch:
+        datatype: float
+        unit: degrees
+        description: Pitch angle of the rocket
+      Roll:
+        datatype: float
+        unit: degrees
+        description: Roll angle of the rocket
+      Yaw:
+        datatype: float
+        unit: degrees
+        description: Yaw angle of the rocket
+    Fuel:
+      FuelLevel:
+        datatype: float
+        unit: percent
+        description: Remaining fuel level as a percentage of total capacity
+      OxidizerLevel:
+        datatype: float
+        unit: percent
+        description: Remaining oxidizer level as a percentage of total capacity
+    Stage:
+      StageSeparationStatus:
+        datatype: bool
+        description: True if stage separation has occurred
+      Stage1LandingStatus:
+        datatype: bool
+        description: True if the first stage has landed successfully
+    Safety:
+      TemperatureWarning:
+        datatype: bool
+        description: True if the rocket's systems are exceeding safe temperature limits
+      PressureWarning:
+        datatype: bool
+        description: True if any critical pressure readings exceed safe levels
+      EmergencyAbortStatus:
+        datatype: bool
+        description: True if an emergency abort sequence has been initiated
+    Communication:
+      TelemetrySignalStrength:
+        datatype: float
+        unit: percent
+        description: Signal strength of the telemetry data transmission
+      CommandStatus:
+        datatype: string
+        description: Status of ground-to-rocket command transmission (Nominal, Delayed, Failed)
+    Navigation:
+      GPSLatitude:
+        datatype: float
+        unit: degrees
+        description: Latitude of the rocket's position via GPS
+      GPSLongitude:
+        datatype: float
+        unit: degrees
+        description: Longitude of the rocket's position via GPS
+      GPSAltitude:
+        datatype: float
+        unit: kilometers
+        description: Altitude above the Earth's surface from GPS data
+    Recovery:
+      ParachuteDeploymentStatus:
+        datatype: bool
+        description: True if parachutes have deployed for recovery
+      DroneShipLandingStatus:
+        datatype: bool
+        description: True if the rocket has successfully landed on the drone ship
+    Battery:
+      BatteryVoltage:
+        datatype: float
+        unit: volts
+        description: Current voltage of the rocket's onboard battery systems
+      BatteryTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature of the onboard battery system
+    Payload:
+      PayloadTemperature:
+        datatype: float
+        unit: celsius
+        description: Temperature of the payload compartment
+      PayloadDoorStatus:
+        datatype: bool
+        description: True if the payload doors are open
