@@ -10,17 +10,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# flake8: noqa: E501
 
 
 from pydbus import SystemBus
 from gi.repository import GLib
 import random
 import toml
-import time
 from pydbus.generic import signal
 from vss_lib.vendor_interface import VehicleSignalInterface
 from vss_lib.vss_logging import logger
+
 
 class VehicleSignalService:
     """
@@ -87,7 +86,6 @@ class VehicleSignalService:
     def load_available_signals(self):
         """
         Load all available signals from the VSS model, including nested signals like Electronics.
-    
         Returns:
            list: A list of all signal names available in the VSS model.
         """
@@ -107,7 +105,6 @@ class VehicleSignalService:
         recursively_load_signals(self.vsi.model.signals)
         logger.info(f"Loaded available signals: {available_signals}")
         return available_signals
-
 
     def GetRandomSignal(self):
         """

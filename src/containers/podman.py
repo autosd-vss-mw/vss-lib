@@ -10,12 +10,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os
 import sys
 import toml
 from invoke import run
 
 CONFIG_PATH = "/etc/vss-lib/vss.config"
+
 
 class PodmanManager:
     def __init__(self, vendor, vspec_file, containerfile):
@@ -28,10 +30,8 @@ class PodmanManager:
     def load_config(self, config_path):
         """
         Load the VSS configuration from a TOML file.
-        
         Args:
             config_path (str): Path to the configuration file.
-
         Returns:
             dict: Parsed configuration data.
         """
@@ -117,9 +117,8 @@ class PodmanManager:
     def stop_container(self, container_name=None):
         """
         Stop and remove the Podman container.
-        
         Args:
-            container_name (str): The name of the container to stop. If not provided, 
+            container_name (str): The name of the container to stop. If not provided,
                                   it stops the vendor-specific container.
         """
         if not container_name:
@@ -141,7 +140,6 @@ class PodmanManager:
         Run the joystick Podman container using the joystick-specific ContainerFile.
         """
         try:
-            joystick_containerfile = "/usr/share/vss-lib/joysticks/ContainerFile"
             vss_spec_path = self.config.get("global", {}).get("vspec_path", "/usr/share/vss-lib")
             run_command = f"""
             podman run -d --replace --name joystick_vss_container \
@@ -159,7 +157,7 @@ class PodmanManager:
             """
             result = run(run_command, hide=True, warn=True)
             if result.ok:
-                print(f"Podman joystick container started successfully.")
+                print("Podman joystick container started successfully.")
             else:
                 print(f"Failed to start Podman joystick container: {result.stderr}")
                 sys.exit(1)

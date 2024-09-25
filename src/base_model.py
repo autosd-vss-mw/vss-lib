@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# flake8: noqa: E501
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from vss_lib.vss_logging import logger
 from vss_lib.vendor_interface import VehicleSignalInterface
 from vss_lib.vspec_parser import load_vspec_file

@@ -9,7 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# flake8: noqa: E501
 
 
 import toml
@@ -20,6 +19,7 @@ CONFIG_PATH = '/etc/vss-lib/vss.config'
 # Set up logger
 logger = logging.getLogger("canbus")
 logging.basicConfig(level=logging.INFO)
+
 
 class CANBusSimulator:
     def __init__(self):

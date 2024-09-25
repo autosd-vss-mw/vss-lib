@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# flake8: noqa: E501
+
 
 import os
 import toml
@@ -59,6 +59,7 @@ def get_vspec_file(vendor):
     else:
         print(f"VSS file not found for vendor: {vendor}")
         return None
+
 
 def load_vspec_file(vspec_file_path):
     """

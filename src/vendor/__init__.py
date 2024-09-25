@@ -9,17 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# flake8: noqa: E501
-# __init__.py for vss_lib.vendor
 
 # Import the individual vendor modules
 from .toyota import ToyotaModel
 from .bmw import BMWModel
-from .ford import FordModel
-from .mercedes import MercedesModel
-from .honda import HondaModel
-from .volvo import VolvoModel
-from .jaguar import JaguarModel
 
 __all__ = [
     'ToyotaModel',

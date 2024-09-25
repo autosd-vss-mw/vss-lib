@@ -10,10 +10,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # vspec/model.py
-# flake8: noqa: E501
+
 
 from vss_lib.vss_logging import logger
 import yaml
+
 
 class Model:
     """
@@ -69,17 +70,15 @@ class Model:
                 signals[signal_name] = details
         return signals
 
-
     def get_signal_details(self, signal_name):
         """
         Get details of a signal by name from the VSS data. This method is designed to be more
         resilient and flexible when retrieving signal details, allowing for partial information
         and providing default values where necessary.
-    
+
         Args:
             signal_name (str): The name of the signal to retrieve details for.
-    
-         Returns:
+        Returns:
             dict: A dictionary containing signal details such as datatype, unit, min, and max,
                   or None if the signal is not found.
         """
@@ -108,7 +107,6 @@ class Model:
         # If current_data is a dictionary, extract details and provide smart defaults
         if isinstance(current_data, dict):
             logger.info(f"Retrieved signal details for {signal_name}: {current_data}")
-        
             # Provide smart defaults for missing fields
             signal_details = {
                 'datatype': current_data.get('datatype', 'float'),  # Default to float
@@ -116,12 +114,10 @@ class Model:
                 'min': current_data.get('min', 0),                 # Default min to 0
                 'max': current_data.get('max', 100)                # Default max to 100
             }
-        
             # Log any missing details that had to be defaulted
             for key, value in signal_details.items():
                 if key not in current_data:
                     logger.warning(f"Signal '{signal_name}' is missing {key}. Defaulting to {value}.")
-                
             return signal_details
 
         # If none of the conditions match, return None and log an error
@@ -139,7 +135,6 @@ class Model:
             dict: The signal data if found, else None.
         """
         keys = path.split(".")
-    
         # Ensure we start looking under the 'Vehicle' key if present
         signal = self.vspec_data.get('Vehicle', {})
         partial_path = "Vehicle"
@@ -158,4 +153,3 @@ class Model:
 
         logger.info(f"Complete signal path found: {path}")
         return signal
-

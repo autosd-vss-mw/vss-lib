@@ -9,11 +9,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# flake8: noqa: E501
+
 
 import os
 import shutil
 import subprocess
+import sys
 import sysconfig
 from setuptools import setup, find_packages
 from setuptools.command.install import install
@@ -52,6 +53,7 @@ directories_to_copy = [
     'containers'
 ]
 
+
 # Function to remove the existing file and create a new one with the correct content
 def create_new_config_file(config_src, config_dst, vspec_path):
     if os.path.exists(config_dst):
@@ -67,6 +69,7 @@ def create_new_config_file(config_src, config_dst, vspec_path):
         file.write(updated_content)
 
     print(f"Created new config file: {config_dst} with vspec_path = {vspec_path}")
+
 
 # Custom install command to handle file installation and ensure directories exist
 class CustomInstallCommand(install):
@@ -215,6 +218,7 @@ class CustomInstallCommand(install):
             print(f"Failed to reload D-Bus or start service: {e}")
             raise
 
+
 def check_if_fedora():
     """
     Check if the system is running Fedora by inspecting /etc/os-release or using the rpm command.
@@ -228,6 +232,7 @@ def check_if_fedora():
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while checking the operating system: {e}")
         return False
+
 
 def stop_vss_dbus_service():
     try:
@@ -255,6 +260,7 @@ def stop_vss_dbus_service():
         print(f"Error while managing {VSS_DBUS_SERVICE} service: {e}")
         sys.exit(1)
 
+
 # vss-lib was developed under Fedora, this checks for Fedora environment
 def check_fuse_overlayfs():
     """
@@ -275,6 +281,7 @@ def check_fuse_overlayfs():
             print("sudo dnf install fuse-overlayfs")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while checking fuse-overlayfs installation: {e}")
+
 
 # Check if fuse-overlayfs is installed
 check_fuse_overlayfs()

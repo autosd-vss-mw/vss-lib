@@ -9,19 +9,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# flake8: noqa: E501
 
 
 import os
-import sys
-import toml
 from vss_lib.vspec.model import Model
 from vss_lib.vss_logging import logger
-from invoke import run
 from vss_lib.canbus import CANBusSimulator
 from vss_lib.containers.podman import PodmanManager
 
 CONFIG_PATH = '/etc/vss-lib/vss.config'
+
 
 class VehicleSignalInterface:
     """
@@ -68,9 +65,9 @@ class VehicleSignalInterface:
         try:
             # Create PodmanManager instance for the vendor
             podman_manager = PodmanManager(
-                    vendor=self.vendor,
-                    vspec_file=self.vspec_file,
-                    containerfile="/usr/share/vss-lib/dbus-manager/ContainerFile"
+                vendor=self.vendor,
+                vspec_file=self.vspec_file,
+                containerfile="/usr/share/vss-lib/dbus-manager/ContainerFile"
             )
 
             # Build and run the Podman container
@@ -197,9 +194,9 @@ class VehicleSignalInterface:
         try:
             # Create PodmanManager instance for joystick container
             podman_manager = PodmanManager(
-                    vendor="joystick",
-                    vspec_file=None,
-                    containerfile="/usr/share/vss-lib/joysticks/ContainerFile"
+                vendor="joystick",
+                vspec_file=None,
+                containerfile="/usr/share/vss-lib/joysticks/ContainerFile"
             )
 
             # Build and run the joystick Podman container
@@ -208,7 +205,7 @@ class VehicleSignalInterface:
 
         except Exception as e:
             logger.error(f"Failed to start joystick Podman container: {e}")
-            raise RuntimeError(f"Joystick Podman container could not be started")
+            raise RuntimeError("Joystick Podman container could not be started")
 
     def stop_joystick_container(self):
         """
@@ -223,4 +220,4 @@ class VehicleSignalInterface:
 
         except Exception as e:
             logger.error(f"Failed to stop joystick Podman container: {e}")
-            raise RuntimeError(f"Joystick Podman container could not be stopped")
+            raise RuntimeError("Joystick Podman container could not be stopped")
