@@ -2,6 +2,8 @@
 
 Vehicle Signal Specifications Python Library based on [COVESA (Connected Vehicle Systems Alliance)](https://covesa.global/) and [their specification](https://covesa.github.io/vehicle_signal_specification/).
 
+VSS-Lib is a Python library and D-Bus service designed to interact with vehicle signals according to the Vehicle Signal Specification (VSS). It supports vendor-specific models and can emit random or real-time hardware signals to the D-Bus interface. The library also allows attaching electronics vendors to vehicle models.
+
 # Table of Contents
 
 1. [VSS-Lib: Vehicle Signal Specification Library](#vss-lib-vehicle-signal-specification-library)
@@ -19,8 +21,6 @@ Vehicle Signal Specifications Python Library based on [COVESA (Connected Vehicle
 8. [Makefile](#makefile)
 9. [Contributing](#contributing)
 10. [License](#license)
-
-VSS-Lib is a Python library and D-Bus service designed to interact with vehicle signals according to the Vehicle Signal Specification (VSS). It supports vendor-specific models and can emit random or real-time hardware signals to the D-Bus interface. The library also allows attaching electronics vendors to vehicle models.
 
 ## Features
 
