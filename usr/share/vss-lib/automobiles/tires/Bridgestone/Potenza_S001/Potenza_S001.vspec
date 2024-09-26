@@ -64,3 +64,32 @@ vspec:
         vendor: "Bridgestone"
         model: "Potenza S001"
         sensor_type: "WearIndicator"
+
+    size:
+      type: branch
+      description: "Tire size information for Bridgestone Potenza S001"
+
+      children:
+        width:
+          type: attribute
+          datatype: integer
+          unit: "mm"
+          description: "Tire width for Bridgestone Potenza S001"
+          min: 100
+          max: 500
+
+        aspect_ratio:
+          type: attribute
+          datatype: integer
+          unit: "percentage"
+          description: "Tire aspect ratio (height/width) for Bridgestone Potenza S001"
+          min: 30
+          max: 90
+
+        rim_diameter:
+          type: attribute
+          datatype: float
+          unit: "inches"
+          description: "Rim diameter for Bridgestone Potenza S001"
+          min: 10
+          max: 24
