@@ -53,6 +53,7 @@ directories_to_copy = [
     'containers'
 ]
 
+
 # Function to remove the existing file and create a new one with the correct content
 def create_new_config_file(config_src, config_dst, vspec_path):
     if os.path.exists(config_dst):
