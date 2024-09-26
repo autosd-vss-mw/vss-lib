@@ -64,3 +64,32 @@ vspec:
         vendor: "BFGoodrich"
         model: "All-Terrain T/A KO2"
         sensor_type: "WearIndicator"
+
+    size:
+      type: branch
+      description: "Tire size information for BFGoodrich All-Terrain T/A KO2"
+
+      children:
+        width:
+          type: attribute
+          datatype: integer
+          unit: "mm"
+          description: "Tire width for BFGoodrich All-Terrain T/A KO2"
+          min: 100
+          max: 500
+
+        aspect_ratio:
+          type: attribute
+          datatype: integer
+          unit: "percentage"
+          description: "Tire aspect ratio (height/width) for BFGoodrich All-Terrain T/A KO2"
+          min: 30
+          max: 90
+
+        rim_diameter:
+          type: attribute
+          datatype: float
+          unit: "inches"
+          description: "Rim diameter for BFGoodrich All-Terrain T/A KO2"
+          min: 10
+          max: 24
