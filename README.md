@@ -63,6 +63,11 @@ VSS-Lib is considered a middleware Python library and D-Bus service designed to 
 ### 9. **Focus on Hardware Innovation**
    - Vendors can focus on hardware development and improving product capabilities without developing custom software, leveraging **VSS-Lib** as a common communication layer.
 
+### 10. **Freedom from Interference integration**
+   - **Out of box** Freedom from Interference tests based executed daily based in real data from vendors specs. 
+
+and much more...
+
 ## Requirements
 
 - Python 3.10+
