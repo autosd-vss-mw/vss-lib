@@ -11,10 +11,14 @@
 # limitations under the License.
 
 # Bridgestone Potenza S001 Tire VSS (Vehicle Signal Specification)
+---
 vspec:
   name: Bridgestone_Potenza_S001
   type: branch
   description: Signals related to Bridgestone Potenza S001 tires
+
+  metadata:
+    tire_type: "Automobile"
 
   children:
     pressure:
@@ -82,7 +86,8 @@ vspec:
           type: attribute
           datatype: integer
           unit: "percentage"
-          description: "Tire aspect ratio (height/width) for Bridgestone Potenza S001"
+          description: >
+            "Tire aspect ratio (height/width) for Bridgestone Potenza S001"
           min: 30
           max: 90
 
