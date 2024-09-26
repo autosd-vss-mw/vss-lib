@@ -1,0 +1,39 @@
+name: Vspec YAML Lint Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install yamllint
+        run: |
+          python -m pip install --upgrade pip
+          pip install yamllint
+
+      - name: Find and lint .vspec files
+        run: |
+          vspec_files=$(find . -name "*.vspec")
+          if [ -z "$vspec_files" ]; then
+            echo "No .vspec files found."
+            exit 0
+          fi
+          yamllint $vspec_files
+        shell: bash
+
+      - name: Check lint results
+        if: failure()
+        run: exit -1
