@@ -192,6 +192,19 @@ sudo rm /etc/systemd/system/vss-dbus.service
 sudo rm /etc/vss/vss.config
 ```
 
+## Makefile
+
+```bash
+$ make help
+Available commands:
+  make                    - Alias for 'make python' to install the Python package
+  make python             - Install the Python package using 'sudo pip install .'
+  make python_uninstall   - Uninstall the Python package using 'sudo pip uninstall vss_lib'
+  make cpython            - Convert Python files to Cython (.pyx), build C extensions
+  make cpython_uninstall  - Remove Cython generated files and build artifacts
+  make help               - Show this help message and explain each target
+```
+
 ## Contributing
 
 Feel free to open an issue or submit a pull request if you'd like to contribute to the project.
