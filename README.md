@@ -41,7 +41,7 @@ VSS-Lib is considered a middleware Python library and D-Bus service designed to 
    - **VSS-Lib** already comes with pre-built functionality for signal management, reducing the need for vendors to reinvent the wheel.
 
 ### 3. **Compliance with Industry Trends**
-   - **VSS-Lib** is aligned with industry initiatives like **W3C Automotive** and **COVESA VSS**, ensuring that vendors stay in line with industry standards.
+   - **VSS-Lib** is aligned with industry initiatives like **COVESA VSS**, ensuring that vendors stay in line with industry standards.
    - Vendors can rely on **VSS-Lib** to maintain compliance with increasing regulatory requirements for data sharing and signal management.
 
 ### 4. **Modular and Extensible**
