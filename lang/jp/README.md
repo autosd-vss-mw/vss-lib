@@ -1,6 +1,6 @@
 # VSS-Lib: 車両信号仕様ライブラリ
 
-[日本語](./lang/jp/README.md), [简体中文](./lang/zh/README.md), [한국어](./lang/ko/README.md), [Português](./lang/pt_BR/README.md), [Français](./lang/fr/README.md), [Italiano](./lang/it/README.md), [Español](./lang/es/README.md), [עִברִית](./lang/he/README.md), [English](./README.md)
+[日本語](./lang/jp/README.md), [简体中文](./lang/zh/README.md), [한국어](./lang/ko/README.md), [Português](./lang/pt_BR/README.md), [Français](./lang/fr/README.md), [Italiano](./lang/it/README.md), [Español](./lang/es/README.md), [עִברִית](./lang/he/README.md), [English](https://github.com/autosd-vss-mw/vss-lib/)
 
 [COVESA (Connected Vehicle Systems Alliance)](https://covesa.global/) と [その仕様](https://covesa.github.io/vehicle_signal_specification/) に基づいたPythonライブラリです。
 
