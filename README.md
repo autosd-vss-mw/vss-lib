@@ -1,16 +1,16 @@
-# VSS-Lib: Vehicle Signal Specification Library
+# VSS-Middleware: Vehicle Signal Specification Library
 
-[日本語](./lang/jp/README.md), [简体中文](./lang/zh/README.md), [한국어](./lang/ko/README.md), [Português](./lang/pt_BR/README.md), [Français](./lang/fr/README.md), [Italiano](./lang/it/README.md), [Español](./lang/es/README.md), [עִברִית](./lang/he/README.md), [English](https://github.com/autosd-vss-mw/vss-lib/)
+[日本語](./lang/jp/README.md), [简体中文](./lang/zh/README.md), [한국어](./lang/ko/README.md), [Português](./lang/pt_BR/README.md), [Français](./lang/fr/README.md), [Italiano](./lang/it/README.md), [Español](./lang/es/README.md), [עִברִית](./lang/he/README.md), [English](https://github.com/autosd-vss-mw/vss-middleware/)
 
-Vehicle Signal Specifications Python Library based on [COVESA (Connected Vehicle Systems Alliance)](https://covesa.global/) and [their specification](https://covesa.github.io/vehicle_signal_specification/).
+Vehicle Signal Specifications (VSS) Middleware is based on [COVESA (Connected Vehicle Systems Alliance)](https://covesa.global/) and [their specification](https://covesa.github.io/vehicle_signal_specification/).
 
-VSS-Lib is considered a middleware Python library and D-Bus service designed to interact with vehicle signals according to the Vehicle Signal Specification (VSS). It supports vendor-specific models and can emit random or real-time hardware signals to the D-Bus interface. The library also allows attaching electronics vendors to vehicle models. Please note that all the VSS data provided here is example only, not real from vendors or supliers.
+VSS Middleware offers a library to manage Vehicle Signal Specifications and their vehicle of any model. It also includes a D-Bus service designed to interact with vehicle signals according to the Vehicle Signal Specification (VSS). It's designed to be vendor agnostic and emit random signal / real-time to D-Bus interface according with the VSS. The middleware also allows attaching electronics vendors and suppliers to vehicle models. Please note that all the VSS data provided here are collected from internet, not from vendors or supliers.
 
 # Table of Contents
 
-1. [VSS-Lib: Vehicle Signal Specification Library](#vss-lib-vehicle-signal-specification-library)
+1. [VSS-Middleware: Vehicle Signal Specification Middleware](#vss-middleware-vehicle-signal-specification-library)
 2. [Features](#features)
-3. [Benefits of VSS-Lib](#benefits-of-vss-lib)
+3. [Benefits of VSS-Middleware](#benefits-of-vss-middleware)
 4. [Requirements](#requirements)
 5. [Installation](#installation)
    - [Step 1: Clone the Repository](#step-1-clone-the-repository)
@@ -27,43 +27,44 @@ VSS-Lib is considered a middleware Python library and D-Bus service designed to 
 
 ## Features
 
+- Middeware (common library) to manage VSS files and all type of vehicles
 - Emit random vehicle signals based on QM, ASIL, or UserPreference.
 - Handle real-time hardware signals from baremetal devices.
-- Attach electronics vendors to vehicle models for simulation.
+- Attach electronics vendors suppliers to vehicle models for simulation.
 - Monitor D-Bus for vehicle signal data.
 
-## Benefits of VSS-Lib
+## Benefits of VSS-Middleware
 
 ### 1. **Standardization and Interoperability**
-   - **VSS-Lib** provides a standardized framework for defining and managing vehicle signals across different vendors, making it easier to share, interpret, and exchange data across the ecosystem.
+   - **VSS-Middleware** provides a standardized framework for defining and managing vehicle signals across different vendors, making it easier to share, interpret, and exchange data across the ecosystem.
    - A standardized approach reduces fragmentation, ensuring vendors can work with other systems more seamlessly.
 
 ### 2. **Time and Cost Efficiency**
-   - Developing proprietary software to handle vehicle signals can be expensive and time-consuming. By using **VSS-Lib**, vendors leverage an existing solution, allowing them to focus on other core aspects of their products.
-   - **VSS-Lib** already comes with pre-built functionality for signal management, reducing the need for vendors to reinvent the wheel.
+   - Developing proprietary software to handle vehicle signals can be expensive and time-consuming. By using **VSS-Middleware**, vendors leverage an existing solution, allowing them to focus on other core aspects of their products.
+   - **VSS-Middleware** already comes with pre-built functionality for signal management, reducing the need for vendors to reinvent the wheel.
 
 ### 3. **Compliance with Industry Trends**
-   - **VSS-Lib** is aligned with industry initiatives like **COVESA VSS**, ensuring that vendors stay in line with industry standards.
-   - Vendors can rely on **VSS-Lib** to maintain compliance with increasing regulatory requirements for data sharing and signal management.
+   - **VSS-Middleware** is aligned with industry initiatives like **COVESA VSS**, ensuring that vendors stay in line with industry standards.
+   - Vendors can rely on **VSS-Middleware** to maintain compliance with increasing regulatory requirements for data sharing and signal management.
 
 ### 4. **Modular and Extensible**
-   - **VSS-Lib** is designed to be modular, allowing vendors to customize and extend it based on their specific needs without building a new system.
+   - **VSS-Middleware** is designed to be modular, allowing vendors to customize and extend it based on their specific needs without building a new system.
    - Vendors can easily attach their specific signals, protocols, and data structures while benefiting from the standardized structure.
 
 ### 5. **Easier Collaboration Across Vendors**
-   - When different electronics and car vendors work together, using **VSS-Lib** makes collaboration smoother, especially when integrating electronics from multiple suppliers.
+   - When different electronics and car vendors work together, using **VSS-Middleware** makes collaboration smoother, especially when integrating electronics from multiple suppliers.
 
 ### 6. **Future-Proofing**
-   - **VSS-Lib** is built to accommodate future changes in technology and regulation. Vendors can rely on the **VSS-Lib** community to handle changes in signal standards and requirements.
+   - **VSS-Middleware** is built to accommodate future changes in technology and regulation. Vendors can rely on the **VSS-Middleware** community to handle changes in signal standards and requirements.
 
 ### 7. **Open Source Community and Support**
-   - **VSS-Lib** benefits from constant development, improvements, and community support, leading to faster bug fixes and enhancements.
+   - **VSS-Middleware** benefits from constant development, improvements, and community support, leading to faster bug fixes and enhancements.
 
 ### 8. **Compatibility Across Industries**
-   - **VSS-Lib** provides a unified structure that can be adapted for various industries, including automotive, aerospace, medical devices, and drones.
+   - **VSS-Middleware** provides a unified structure that can be adapted for various industries, including automotive, aerospace, medical devices, and drones.
 
 ### 9. **Focus on Hardware Innovation**
-   - Vendors can focus on hardware development and improving product capabilities without developing custom software, leveraging **VSS-Lib** as a common communication layer.
+   - Vendors can focus on hardware development and improving product capabilities without developing custom software, leveraging **VSS-Middleware** as a common communication layer.
 
 ### 10. **Freedom from Interference integration**
    - **Out of box** Freedom from Interference tests based executed daily based in real data from vendors specs. 
@@ -84,7 +85,7 @@ and much more...
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/vss-lib.git
+git clone https://github.com/autosd-vss-mw/vss-lib
 cd vss-lib
 ```
 
@@ -136,7 +137,7 @@ signal time=1725863096.479761 sender=:1.9701 -> destination=(null destination) s
 
 (In a second terminal, see the containers created sending the ASIL and QM signals to the VSS DBUS manager demo using VSS specs):
 ```bash
-vss-lib (main) $ sudo podman ps
+vss-middleware (main) $ sudo podman ps
 [sudo] password for douglas:
 CONTAINER ID  IMAGE                                COMMAND               CREATED             STATUS             PORTS       NAMES
 9a5937f3a82f                                       /sbin/init            54 minutes ago      Up 54 minutes                  qm
@@ -193,7 +194,7 @@ Example configuration:
 
 ```ini
 [global]
-vspec_path=/usr/share/vss-lib/
+vspec_path=/usr/share/vss-middleware/
 
 [vehicle_toyota]
 vspec_file=${vspec_path}toyota.vspec
@@ -248,7 +249,7 @@ sudo systemctl disable vss-dbus.service
 To uninstall the library and clean up:
 
 ```bash
-pip uninstall vss-lib
+pip uninstall vss-middleware
 sudo rm /etc/systemd/system/vss-dbus.service
 sudo rm /etc/vss/vss.config
 ```
