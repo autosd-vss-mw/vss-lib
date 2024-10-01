@@ -27,7 +27,7 @@ VSS Middleware offers a library to manage Vehicle Signal Specifications and thei
 
 ## Features
 
-- Middeware (common library) to manage VSS files and all type of vehicles
+- Middeware (common library) to manage VSS files and [all type of vehicles](https://github.com/autosd-vss-mw/vss-lib/tree/main/usr/share/vss-lib)
 - Emit random vehicle signals based on QM, ASIL, or UserPreference.
 - Handle real-time hardware signals from baremetal devices.
 - Attach electronics vendors suppliers to vehicle models for simulation.
