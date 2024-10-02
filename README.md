@@ -103,6 +103,8 @@ source venv/bin/activate
 Install the library and the VSS D-Bus demo service:
 
 ```bash
+python -m venv myenv
+source myenv/bin/activate
 sudo pip install .
 sudo systemctl daemon-reload
 sudo systemctl enable vss-dbus.service
