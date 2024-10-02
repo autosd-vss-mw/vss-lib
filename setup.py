@@ -260,31 +260,33 @@ def stop_vss_dbus_service():
         print(f"Error while managing {VSS_DBUS_SERVICE} service: {e}")
         sys.exit(1)
 
-
-# vss-lib was developed under Fedora, this checks for Fedora environment
-def check_fuse_overlayfs():
+def check_package(package_name):
     """
-    Check if fuse-overlayfs is installed and recommend installation if it's missing, but only if the system is Fedora.
+    Check if the specified package is installed and recommend installation if it's missing, but only if the system is Fedora.
+
+    Args:
+        package_name (str): Name of the package to check.
     """
     if not check_if_fedora():
-        print("System is not running Fedora. Skipping fuse-overlayfs check.")
+        print(f"System is not running Fedora. Skipping {package_name} package check.")
         return
 
     try:
-        # Try to find the fuse-overlayfs package using the rpm command
-        result = subprocess.run(['rpm', '-q', 'fuse-overlayfs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        # Try to find the package using the rpm command
+        # TODO: implement for such check for other distros
+        result = subprocess.run(['rpm', '-q', package_name], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         if result.returncode == 0:
-            print("fuse-overlayfs is installed.")
+            print(f"{package_name} is installed.")
         else:
-            print("fuse-overlayfs is not installed. Please install it using:")
-            print("sudo dnf install fuse-overlayfs")
+            print(f"{package_name} is not installed. Please install it using:")
+            print(f"sudo dnf install {package_name}")
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred while checking fuse-overlayfs installation: {e}")
+        print(f"An error occurred while checking {package_name} installation: {e}")
 
-
-# Check if fuse-overlayfs is installed
-check_fuse_overlayfs()
+# Check required packages in the system
+check_package('fuse-overlayfs')
+check_package('qm')
 
 # Define the setup for the package
 setup(
