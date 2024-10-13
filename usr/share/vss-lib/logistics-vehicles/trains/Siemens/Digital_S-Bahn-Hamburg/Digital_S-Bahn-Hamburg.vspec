@@ -1,0 +1,586 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+Vehicle:
+  Type: Train
+  Brand: Siemens
+  Model: Autonomous Train
+  Year: 0000
+
+signals:
+  # Train Performance and Movement
+  Train:
+    Speed:
+      type: float
+      unit: km/h
+      min: 0
+      max: 220
+      description: Current speed of the train.
+
+    Acceleration:
+      type: float
+      unit: m/s²
+      min: -1.5
+      max: 1.5
+      description: Train's acceleration or deceleration rate.
+
+    Deceleration:
+      type: float
+      unit: m/s²
+      min: 0
+      max: 3
+      description: Rate of deceleration.
+
+    WheelSlipDetection:
+      FrontAxle:
+        type: boolean
+        description: Indicates if wheel slip is detected on the front axle.
+
+      RearAxle:
+        type: boolean
+        description: Indicates if wheel slip is detected on the rear axle.
+
+    WeightDistribution:
+      FrontCar:
+        type: float
+        unit: tons
+        min: 0
+        max: 200
+        description: Weight distribution in the front car.
+
+      RearCar:
+        type: float
+        unit: tons
+        min: 0
+        max: 200
+        description: Weight distribution in the rear car.
+
+    CenterOfGravity:
+      X:
+        type: float
+        unit: meters
+        min: -5
+        max: 5
+        description: X-axis position of the train’s center of gravity.
+
+      Y:
+        type: float
+        unit: meters
+        min: -5
+        max: 5
+        description: Y-axis position of the train’s center of gravity.
+
+  # Autonomous Control, AI Diagnostics, and Analytics
+  ATO:
+    Mode:
+      type: string
+      enum: [Automatic, Manual, PartialAutomatic, Supervised, Remote]
+      description: The current mode of train operation.
+
+    AIAnalytics:
+      EnergyUsagePrediction:
+        type: float
+        unit: kWh
+        min: 0
+        max: 2000
+        description: Predicted energy consumption based on real-time analytics.
+
+      AIObstacleDetectionConfidence:
+        type: float
+        unit: percentage
+        min: 0
+        max: 100
+        description: Confidence level of the AI obstacle detection system.
+
+      AnomalyDetection:
+        type: string
+        description: List of anomalies detected by AI systems in train behavior or sensor data.
+
+      PredictiveFailureDetection:
+        type: boolean
+        description: Indicates whether AI predicts an imminent failure of a system component.
+
+    SchedulingSystem:
+      RealTimeScheduleDeviation:
+        type: float
+        unit: minutes
+        min: -30
+        max: 120
+        description: Deviation from the real-time schedule.
+
+      EstimatedArrivalTime:
+        type: string
+        format: HH:mm:ss
+        description: Estimated arrival time at the next station, accounting for real-time data.
+
+  # Train-to-Train and Train-to-Ground Communication
+  Communication:
+    TrainToTrainLink:
+      Connected:
+        type: boolean
+        description: Indicates if the train is communicating with other nearby trains.
+
+      DistanceToNextTrain:
+        type: float
+        unit: meters
+        min: 0
+        max: 5000
+        description: Distance to the next train on the same track.
+
+    TrainToStationLink:
+      Active:
+        type: boolean
+        description: Indicates if the train is connected to the station communication system.
+
+      StationID:
+        type: string
+        description: Unique ID of the station the train is currently communicating with.
+
+      StationDistance:
+        type: float
+        unit: meters
+        min: 0
+        max: 10000
+        description: Distance to the next station.
+
+  # Environmental Sustainability and Emissions Tracking
+  Environment:
+    CO2Emissions:
+      type: float
+      unit: kg/h
+      min: 0
+      max: 500
+      description: Current CO2 emissions of the train.
+
+    NOxEmissions:
+      type: float
+      unit: g/km
+      min: 0
+      max: 50
+      description: Nitrogen Oxide (NOx) emissions, if applicable to the train's power system.
+
+    EnergyRecoveryPercentage:
+      type: float
+      unit: percentage
+      min: 0
+      max: 100
+      description: Percentage of energy recovered through regenerative braking or other systems.
+
+    EnergyEfficiencyIndex:
+      type: float
+      unit: Wh/passenger-km
+      min: 0
+      max: 1000
+      description: Energy efficiency based on passenger distance traveled.
+
+    EnvironmentalImpactIndex:
+      type: float
+      unit: points
+      min: 0
+      max: 100
+      description: Composite score representing the train's overall environmental impact (calculated from emissions, energy efficiency, and more).
+
+  # Passenger Services and Interaction
+  PassengerInfo:
+    AnnouncementStatus:
+      type: string
+      enum: [Playing, Stopped]
+      description: Status of the passenger announcement system.
+
+    NextStop:
+      type: string
+      description: Name of the upcoming stop on the route.
+
+    PassengerCount:
+      type: integer
+      min: 0
+      max: 1000
+      description: Current number of passengers onboard.
+
+    PassengerFeedbackSystem:
+      FeedbackReceived:
+        type: boolean
+        description: Indicates whether feedback was received from passengers via the onboard system.
+
+      FeedbackType:
+        type: string
+        enum: [Comfort, Cleanliness, Delay, Safety, Other]
+        description: Type of feedback received from passengers.
+
+    AccessibilityFeaturesStatus:
+      type: boolean
+      description: Indicates if the train's accessibility features (e.g., ramps, audio announcements) are fully operational.
+
+    WiFiSignalStrength:
+      type: float
+      unit: dBm
+      min: -100
+      max: 0
+      description: Signal strength of the onboard WiFi network.
+
+    SeatOccupancySensors:
+      TotalSeatsOccupied:
+        type: integer
+        min: 0
+        max: 1000
+        description: Total number of seats occupied onboard.
+
+      SeatsAvailable:
+        type: integer
+        min: 0
+        max: 1000
+        description: Number of seats currently available.
+
+    EntertainmentSystem:
+      CurrentMediaPlaying:
+        type: string
+        description: Media currently being played on the onboard entertainment system.
+
+      MediaType:
+        type: string
+        enum: [Movie, TVShow, Music, Podcast, Radio]
+        description: Type of media being played.
+
+  # Crew Operations and Monitoring
+  CrewOperations:
+    DriverAlertnessMonitor:
+      type: boolean
+      description: Indicates whether the driver’s alertness is being monitored (if applicable in supervised mode).
+
+    CrewCommunications:
+      CrewMessageSent:
+        type: boolean
+        description: Indicates whether a communication message was sent to or from the train’s crew.
+
+      MessageType:
+        type: string
+        enum: [Operational, Emergency, Maintenance]
+        description: Type of communication sent by the crew.
+
+    CrewFatigueStatus:
+      type: string
+      enum: [Normal, Fatigued, Asleep]
+      description: Real-time monitoring of crew fatigue levels using biometrics or eye tracking.
+
+    CrewShiftRemainingTime:
+      type: float
+      unit: hours
+      min: 0
+      max: 12
+      description: Remaining time in the crew’s current shift.
+
+  # Train Data Logging and Analytics
+  DataLogging:
+    LoggingEnabled:
+      type: boolean
+      description: Indicates if the train’s data logging system is currently active.
+
+    LogDataSize:
+      type: float
+      unit: GB
+      min: 0
+      max: 1000
+      description: Current size of the stored log data.
+
+    DataTransferStatus:
+      type: boolean
+      description: Indicates if log data is being transmitted to ground control or data centers.
+
+    LoggedEventsCount:
+      type: integer
+      min: 0
+      max: 100000
+      description: Total number of logged events since the last data transfer.
+
+  # Maintenance and Diagnostics Extensions
+  Maintenance:
+    PredictiveMaintenance:
+      PowerSupplyFluctuations:
+        type: float
+        unit: percentage
+        min: 0
+        max: 100
+        description: Power supply fluctuations that could indicate a potential system failure.
+
+      WheelFlangeWear:
+        type: float
+        unit: mm
+        min: 0
+        max: 50
+        description: Current flange wear on the wheels.
+
+      CouplingWearStatus:
+        type: string
+        enum: [Normal, Worn, Critical]
+        description: Current wear status of train coupling mechanisms.
+
+      PantographWear:
+        type: float
+        unit: mm
+        min: 0
+        max: 50
+        description: Current wear level of the pantograph (for electric trains using overhead lines).
+
+    SafetySystemDiagnostics:
+      SmokeDetectionStatus:
+        type: boolean
+        description: Indicates if the onboard smoke detection system is operational.
+
+      AirBrakePressure:
+        type: float
+        unit: bar
+        min: 0
+        max: 10
+        description: Pressure in the air brake system.
+
+      DoorInterlockStatus:
+        type: boolean
+        description: Indicates if the door interlock system is engaged (doors must be closed to allow train movement).
+
+    BatteryHealthMonitoring:
+      BatteryVoltage:
+        type: float
+        unit: V
+        min: 0
+        max: 1000
+        description: Current battery voltage.
+
+      ChargeCycleCount:
+        type: integer
+        min: 0
+        max: 10000
+        description: Total number of charge cycles for the onboard battery.
+
+      BatteryTemperature:
+        type: float
+        unit: °C
+        min: -30
+        max: 100
+        description: Current temperature of the onboard battery system.
+
+  # Emergency Systems
+  EmergencySystems:
+    FireSuppressionSystemStatus:
+      type: boolean
+      description: Indicates if the fire suppression system is operational.
+
+    EmergencyEvacuationProtocol:
+      Active:
+        type: boolean
+        description: Indicates if emergency evacuation protocols are being executed.
+
+    FirstResponderCoordination:
+      Connected:
+        type: boolean
+        description: Indicates if the train is connected to emergency first responders.
+
+      EvacuationPlanStatus:
+        type: string
+        enum: [Ready, InProgress, Completed, NotRequired]
+        description: Status of the evacuation plan during an emergency.
+
+    PassengerEmergencyCommunication:
+      Active:
+        type: boolean
+        description: Indicates whether the passenger-initiated emergency communication system is active.
+
+    EmergencyBrakeActivation:
+      type: boolean
+      description: Indicates if the emergency brake has been activated, either manually or automatically.
+
+    CollisionAvoidanceSystem:
+      Active:
+        type: boolean
+        description: Indicates whether the collision avoidance system is currently active and operational.
+
+    ObstacleDetected:
+      DistanceToObstacle:
+        type: float
+        unit: meters
+        min: 0
+        max: 500
+        description: Distance to any detected obstacle in the path of the train.
+        
+      ObstacleType:
+        type: string
+        enum: [Animal, Human, Vehicle, Object, Unknown]
+        description: Type of obstacle detected on or near the tracks.
+
+  # Climate Control and Passenger Environment
+  Environment:
+    CabinTemperature:
+      type: float
+      unit: °C
+      min: -20
+      max: 40
+      description: Temperature inside the passenger cabin.
+
+    ExternalTemperature:
+      type: float
+      unit: °C
+      min: -40
+      max: 60
+      description: Temperature outside the train.
+
+    HumidityLevel:
+      type: float
+      unit: percentage
+      min: 0
+      max: 100
+      description: Humidity level inside the cabin.
+
+    AirQuality:
+      CO2:
+        type: float
+        unit: ppm
+        min: 0
+        max: 5000
+        description: Carbon dioxide level inside the cabin.
+
+      O2:
+        type: float
+        unit: percentage
+        min: 0
+        max: 100
+        description: Oxygen level inside the cabin.
+
+      VOCs:
+        type: float
+        unit: ppb
+        min: 0
+        max: 10000
+        description: Volatile organic compounds (VOCs) concentration inside the cabin.
+
+    AirFiltrationSystemStatus:
+      type: boolean
+      description: Indicates whether the cabin air filtration system is active and functioning.
+
+    PassengerComfort:
+      SeatHeatingStatus:
+        type: boolean
+        description: Indicates whether seat heating is active in the cabin.
+
+      SeatCoolingStatus:
+        type: boolean
+        description: Indicates whether seat cooling is active.
+
+  # Train Infrastructure Interaction
+  Infrastructure:
+    TrackType:
+      type: string
+      enum: [MainLine, BranchLine, Siding, Platform]
+      description: Type of track section the train is currently on.
+
+    ElectrificationType:
+      type: string
+      enum: [AC, DC, Non-electrified]
+      description: Type of electrification present on the track.
+
+    TrackCondition:
+      type: string
+      enum: [Good, Worn, Critical, Fault]
+      description: Condition of the track based on sensor data.
+
+    BridgeCrossingStatus:
+      type: boolean
+      description: Indicates whether the train is currently crossing a bridge.
+
+    TunnelStatus:
+      type: boolean
+      description: Indicates if the train is passing through a tunnel.
+
+    SwitchPosition:
+      type: string
+      enum: [Straight, Diverging, Unknown]
+      description: Position of the nearest track switch.
+
+    PlatformPosition:
+      ApproachingPlatform:
+        type: boolean
+        description: Indicates whether the train is approaching a platform for a scheduled stop.
+
+      PlatformDistance:
+        type: float
+        unit: meters
+        min: 0
+        max: 1000
+        description: Distance to the nearest platform.
+
+    LevelCrossing:
+      Active:
+        type: boolean
+        description: Status of nearby level crossings.
+      
+      BarrierStatus:
+        type: string
+        enum: [Open, Closed]
+        description: Status of the level crossing barriers.
+
+  # Predictive Maintenance and Redundant Systems
+  Maintenance:
+    PredictiveMaintenance:
+      WheelsetVibration:
+        type: float
+        unit: m/s²
+        min: 0
+        max: 10
+        description: Vibration levels in the train’s wheelsets used to predict wear and failure.
+
+      TractionMotorVibration:
+        type: float
+        unit: m/s²
+        min: 0
+        max: 10
+        description: Vibration in the traction motors used for predictive maintenance.
+
+      GearboxTemperature:
+        type: float
+        unit: °C
+        min: -30
+        max: 150
+        description: Gearbox temperature to predict mechanical wear.
+
+      HydraulicSystemPressure:
+        type: float
+        unit: bar
+        min: 0
+        max: 20
+        description: Hydraulic system pressure for predictive wear analysis.
+
+      ElectricalLoadImbalance:
+        type: float
+        unit: percentage
+        min: 0
+        max: 100
+        description: Electrical load imbalance detected across systems for predictive failure analysis.
+
+    RedundantSystemHealth:
+      BrakeSystemRedundancy:
+        type: boolean
+        description: Health of the redundant braking system.
+
+      PowerRedundancyStatus:
+        type: boolean
+        description: Indicates if backup power systems are functioning correctly.
+
+      CommunicationRedundancyStatus:
+        type: boolean
+        description: Status of redundant communication systems (e.g., backup GSM-R or satellite link).
+
+    CoolingSystemHealth:
+      PrimaryCoolingStatus:
+        type: boolean
+        description: Status of the primary cooling system.
+
+      BackupCoolingStatus:
+        type: boolean
+        description: Status of the backup cooling system.
