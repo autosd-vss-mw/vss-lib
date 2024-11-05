@@ -18,7 +18,7 @@ from pydbus.generic import signal
 import logging
 import os
 import pygame
-import pydualsense
+#import pydualsense
 
 logger = logging.getLogger("joysticks_service")
 
@@ -43,7 +43,7 @@ class JoystickService:
     def __init__(self):
         self.joystick_devices = []  # List to store all joystick devices
         self.ps5_controller = None  # For DualSense controller
-        self.ds = None  # pydualsense instance
+        #self.ds = None  # pydualsense instance
         self.load_joystick_devices()
         self.initialize_dualsense()
 
@@ -73,13 +73,13 @@ class JoystickService:
         self.ps5_controller.init()
         logger.info(f"Detected PS5 controller: {self.ps5_controller.get_name()}")
 
-        self.ds = pydualsense.pydualsense()
-        self.ds.init()
+        #self.ds = pydualsense.pydualsense()
+        #self.ds.init()
         logger.info(f"DualSense controller initialized with features: {dir(self.ds.state)}")
 
         # Set default vibration settings for the PS5 controller
-        self.ds.setLeftMotor(128)  # Medium vibration for left motor
-        self.ds.setRightMotor(128)  # Medium vibration for right motor
+        #self.ds.setLeftMotor(128)  # Medium vibration for left motor
+        #self.ds.setRightMotor(128)  # Medium vibration for right motor
 
     def handle_dualsense_features(self):
         """
@@ -116,8 +116,8 @@ class JoystickService:
     def quit(self):
         """Quits Pygame and pydualsense when stopping the service."""
         pygame.quit()
-        if self.ds:
-            self.ds.close()
+        #if self.ds:
+        #    self.ds.close()
 
 
 def on_timeout():
