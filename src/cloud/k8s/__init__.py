@@ -128,3 +128,26 @@ You can install 'kind' by running the following commands:
             subprocess.run(['kubectl', 'delete', resource_type, resource_name], check=True)
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Failed to delete {resource_type} '{resource_name}': {e}")
+
+    def apply_to_remote_clusters(self, clusters, manifest_file, kubeconfig_files):
+        """
+        Applies a given YAML manifest to multiple remote Kubernetes clusters.
+
+        Parameters:
+        - clusters (list of str): A list of cluster names to which the manifest should be applied.
+        - manifest_file (str): The path to the YAML manifest file to be applied.
+        - kubeconfig_files (list of str): A list of kubeconfig file paths for the remote clusters.
+
+        Returns:
+        - None
+        """
+        if len(clusters) != len(kubeconfig_files):
+            raise RuntimeError(f"Number of clusters is different from kubeconfig files")
+
+        for cluster, kubeconfig in zip(clusters, kubeconfig_files):
+            try:
+                # Switch context and apply the manifest using the specified kubeconfig
+                apply_command = f"kubectl --kubeconfig={kubeconfig} apply -f {manifest_file}"
+                subprocess.run(apply_command, shell=True, check=True)
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"Failed to apply the YAML manifest: {e}")
