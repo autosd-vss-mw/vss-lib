@@ -50,7 +50,8 @@ directories_to_copy = [
     'dbus',
     'vendor',
     'vspec',
-    'containers'
+    'containers',
+    'cloud'
 ]
 
 
@@ -217,7 +218,6 @@ class CustomInstallCommand(install):
         except subprocess.CalledProcessError as e:
             print(f"Failed to reload D-Bus or start service: {e}")
             raise
-
 
 def check_if_fedora():
     """
