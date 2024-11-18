@@ -1,0 +1,68 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import asyncio
+from vss_lib.kuksa import KUKSAClientVSS
+import jwt
+import datetime
+
+
+async def main():
+    # Generate a valid JWT token
+    secret_key = "your-256-bit-secret"
+    payload = {
+        "sub": "test-client",
+        "iss": "your-issuer",
+        "aud": "kuksa.val",
+        "iat": datetime.datetime.now(datetime.timezone.utc),
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+    }
+    valid_token = jwt.encode(payload, secret_key, algorithm="HS256")
+
+    # Generate an invalid JWT token (example of an expired token)
+    payload["exp"] = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1)
+    invalid_token = jwt.encode(payload, secret_key, algorithm="HS256")
+
+    # Client with a valid token
+    print("\n=== Client with a Valid Token ===")
+    client_with_valid_token = KUKSAClientVSS(token=valid_token, secret_key=secret_key)
+    await client_with_valid_token.connect()
+    if client_with_valid_token.is_authenticated:
+        await client_with_valid_token.set_signal_value('Vehicle.Speed', 50)
+        print("Waiting for updates with timeout...")
+        await client_with_valid_token.subscribe_to_signal('Vehicle.Speed', timeout=5)
+    await client_with_valid_token.disconnect()
+
+    # Client with an invalid token
+    print("\n--- Client with an Invalid Token ---")
+    client_with_invalid_token = KUKSAClientVSS(token=invalid_token, secret_key=secret_key)
+    await client_with_invalid_token.connect()
+    if client_with_invalid_token.is_authenticated:
+        await client_with_invalid_token.set_signal_value('Vehicle.Speed', 70)
+        print("Waiting for updates with timeout...")
+        await client_with_invalid_token.subscribe_to_signal('Vehicle.Speed', timeout=5)
+    await client_with_invalid_token.disconnect()
+
+    # Client without a token
+    print("\n=== Client without a Token ===")
+    client_without_token = KUKSAClientVSS()
+    await client_without_token.connect()
+    await client_without_token.set_signal_value('Vehicle.Speed', 60)
+    print("Waiting for updates with timeout...")
+    await client_without_token.subscribe_to_signal('Vehicle.Speed', timeout=5)
+    await client_without_token.disconnect()
+
+# Run the main function
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("Program interrupted by user. Exiting gracefully.")

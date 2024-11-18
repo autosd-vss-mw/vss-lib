@@ -51,7 +51,8 @@ directories_to_copy = [
     'vendor',
     'vspec',
     'containers',
-    'cloud'
+    'cloud',
+    'kuksa'
 ]
 
 
@@ -306,7 +307,8 @@ setup(
         "pygame",
         "pydualsense",
         "python-can",
-        "vss-tools"
+        "vss-tools",
+        "kuksa-client"
     ],
     cmdclass={
         'install': CustomInstallCommand,  # Custom install command for Python files and system-wide files
