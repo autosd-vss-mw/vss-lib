@@ -15,7 +15,9 @@ from vss_lib.vss_logging import logger
 from vss_lib.vendor_interface import VehicleSignalInterface
 from vss_lib.uds import UDSHandler
 from vss_lib.vspec_parser import load_vspec_file
-from config_loader import get_vspec_file
+from config_loader import get_vspec_file, load_config
+from vss_lib.canbus import CANTransport
+from vss_lib.uprotocol import UProtocol
 
 
 class BaseModel:
@@ -25,28 +27,29 @@ class BaseModel:
 
     def __init__(self, vendor, preference, attached_electronics):
         """
-        Initialize the model by loading the VSS file for the specified vendor and setting up the vehicle interface.
+        Initialize the model by loading the VSS file for the specified vendor
+        and setting up the vehicle interface.
         """
-        self.config = config
+        self.config = self.load_config()
+        self.vendor = vendor
+        self.preference = preference
+        self.attached_electronics = attached_electronics or []
 
-        # Load the VSS file path for the given vendor using the configuration loader
+        # Load the VSS file path for the vendor
         vspec_file = get_vspec_file(vendor)
         if not vspec_file:
             raise FileNotFoundError(f"VSS file for vendor '{vendor}' not found.")
 
         # Load VSS data
         self.vspec_data = load_vspec_file(vspec_file)
-        if self.vspec_data is None:
+        if not self.vspec_data:
             raise AttributeError(f"Failed to load model from {vspec_file}")
-        if not vspec_file:
-            raise FileNotFoundError(f"VSS file for vendor '{vendor}' not found.")
+        logger.info(f"Loaded VSS model from {vspec_file}")
 
-        logger.info(f'Loaded VSS model from {vspec_file}')
-
-        # Initialize VehicleSignalInterface for the vendor
+        # Initialize VehicleSignalInterface
         try:
             self.vehicle_signal_interface = VehicleSignalInterface(
-                vendor=vendor, preference=preference, attached_electronics=attached_electronics
+                vendor=vendor, preference=preference, attached_electronics=self.attached_electronics
             )
             logger.info(f"VehicleSignalInterface initialized for {vendor}.")
         except Exception as e:
@@ -58,54 +61,37 @@ class BaseModel:
 
         # Initialize UDSHandler
         try:
-            self.uds_handler = UDSHandler(transport_layer=self.setup_transport(), config=self.config["uds"])
+            self.uds_handler = UDSHandler(
+                transport_layer=self.setup_transport(), config=self.config.get("uds", {})
+            )
             logger.info("UDSHandler initialized successfully.")
-        except KeyError as ke:
-            logger.error(f"Missing UDS configuration: {ke}")
-            self.uds_handler = None
         except Exception as e:
             logger.error(f"Failed to initialize UDSHandler: {e}")
             self.uds_handler = None
 
-    def setup_transport(self):
-        """
-        Setup the transport layer for UDS communication. This method should be implemented based on your use case.
-        """
-        # Example: Initialize CAN or TCP transport based on self.config
-        transport_type = self.config.get("transport_type", "CAN")
-        if transport_type == "CAN":
-            # Return a CAN transport object
-            return CANTransport()
-        elif transport_type == "TCP":
-            # Return a TCP transport object
-            return TCPTransport(self.config.get("tcp_address"), self.config.get("tcp_port"))
-        else:
-            raise ValueError(f"Unsupported transport type: {transport_type}")
-
-        # Initialize VehicleSignalInterface for the vendor
-        try:
-            self.vehicle_signal_interface = VehicleSignalInterface(
-                vendor=vendor, preference=preference, attached_electronics=attached_electronics
-            )
-            logger.info(f"VehicleSignalInterface initialized for {vendor}.")
-        except Exception as e:
-            logger.error(f"Failed to initialize VehicleSignalInterface for {vendor}: {e}")
-            self.vehicle_signal_interface = None
-
-        # Load available signals
-        self.available_signals = self.load_available_signals()
-        self.uds_handler = UDSHandler(transport_layer=self.setup_transport(), config=config["uds"])
-
-    @property
-    def config(self):
+    def load_config(self):
         """
         Fetch configuration from the config_loader.
 
         Returns:
             dict: The loaded configuration as a dictionary.
         """
-        from config_loader import load_config
         return load_config("/etc/vss-config")
+
+    def setup_transport(self):
+        """
+        Setup the transport layer for UDS communication.
+
+        Returns:
+            object: Transport object (CANTransport, UProtocol, etc.)
+        """
+        transport_type = self.config.get("transport_type", "CAN").lower()
+        if transport_type == "can":
+            return CANTransport()
+        elif transport_type == "uprotocol":
+            return UProtocol()
+        else:
+            raise ValueError(f"Unsupported transport type: {transport_type}")
 
     def load_available_signals(self):
         """
@@ -114,10 +100,9 @@ class BaseModel:
         Returns:
             list: A list of signal paths available in the model.
         """
-        if self.vspec_data is None:
+        if not self.vspec_data:
             raise AttributeError("BaseModel has no 'vspec_data' initialized.")
-
-        return list(self.vspec_data.keys()) if self.vspec_data else []
+        return list(self.vspec_data.keys())
 
     def attach_electronic(self, electronic_model):
         """
@@ -127,7 +112,7 @@ class BaseModel:
             electronic_model (object): The electronics model to attach.
         """
         self.attached_electronics.append(electronic_model)
-        logger.info(f'Attached {electronic_model.__class__.__name__} to {self.__class__.__name__}')
+        logger.info(f"Attached {electronic_model.__class__.__name__} to {self.__class__.__name__}")
 
     def get_signal_details(self, signal_name):
         """
@@ -140,29 +125,27 @@ class BaseModel:
             dict: A dictionary containing signal details such as datatype, unit, min, and max.
         """
         keys = signal_name.split(".")
-        signal = self.vspec_data  # This is the loaded VSS model
+        signal = self.vspec_data
 
         for key in keys:
             if isinstance(signal, dict):
                 signal = signal.get(key)
             else:
-                logger.error(f"Expected dictionary for signal path '{signal_name}', but got: {type(signal)}")
+                logger.error(f"Expected dictionary for signal path '{signal_name}', got: {type(signal)}")
                 return None
-
             if signal is None:
                 logger.warning(f"Signal path '{signal_name}' not found.")
                 return None
 
-        # Ensure the signal is a dictionary and not an int or other type
         if not isinstance(signal, dict):
-            logger.error(f"Expected signal details for '{signal_name}', but got: {type(signal)}")
+            logger.error(f"Expected signal details for '{signal_name}', got: {type(signal)}")
             return None
 
         return {
-            "datatype": signal.get('datatype'),
-            "unit": signal.get('unit'),
-            "min": signal.get('min'),
-            "max": signal.get('max')
+            "datatype": signal.get("datatype"),
+            "unit": signal.get("unit"),
+            "min": signal.get("min"),
+            "max": signal.get("max"),
         }
 
     def validate_signal(self, signal_name, value):
@@ -178,11 +161,10 @@ class BaseModel:
         """
         signal = self.get_signal_details(signal_name)
         if signal:
-            if signal.get('min') <= value <= signal.get('max'):
-                logger.info(f'Value {value} for signal "{signal_name}" is valid.')
+            if signal.get("min") <= value <= signal.get("max"):
+                logger.info(f"Value {value} for signal '{signal_name}' is valid.")
                 return True
-            else:
-                logger.warning(f'Value {value} for signal "{signal_name}" is out of range.')
-                return False
-        logger.error(f'Signal "{signal_name}" not found for validation.')
+            logger.warning(f"Value {value} for signal '{signal_name}' is out of range.")
+            return False
+        logger.error(f"Signal '{signal_name}' not found for validation.")
         return False
