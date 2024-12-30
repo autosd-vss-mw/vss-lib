@@ -13,6 +13,7 @@
 
 from vss_lib.vss_logging import logger
 from vss_lib.vendor_interface import VehicleSignalInterface
+from vss_lib.uds import UDSHandler
 from vss_lib.vspec_parser import load_vspec_file
 from config_loader import get_vspec_file
 
@@ -26,18 +27,19 @@ class BaseModel:
         """
         Initialize the model by loading the VSS file for the specified vendor and setting up the vehicle interface.
         """
+        self.config = config
+
         # Load the VSS file path for the given vendor using the configuration loader
         vspec_file = get_vspec_file(vendor)
-
         if not vspec_file:
             raise FileNotFoundError(f"VSS file for vendor '{vendor}' not found.")
-
-        logger.info(f"Loaded VSS file for {vendor}: {vspec_file}")
 
         # Load VSS data
         self.vspec_data = load_vspec_file(vspec_file)
         if self.vspec_data is None:
             raise AttributeError(f"Failed to load model from {vspec_file}")
+        if not vspec_file:
+            raise FileNotFoundError(f"VSS file for vendor '{vendor}' not found.")
 
         logger.info(f'Loaded VSS model from {vspec_file}')
 
@@ -53,6 +55,46 @@ class BaseModel:
 
         # Load available signals
         self.available_signals = self.load_available_signals()
+
+        # Initialize UDSHandler
+        try:
+            self.uds_handler = UDSHandler(transport_layer=self.setup_transport(), config=self.config["uds"])
+            logger.info("UDSHandler initialized successfully.")
+        except KeyError as ke:
+            logger.error(f"Missing UDS configuration: {ke}")
+            self.uds_handler = None
+        except Exception as e:
+            logger.error(f"Failed to initialize UDSHandler: {e}")
+            self.uds_handler = None
+
+    def setup_transport(self):
+        """
+        Setup the transport layer for UDS communication. This method should be implemented based on your use case.
+        """
+        # Example: Initialize CAN or TCP transport based on self.config
+        transport_type = self.config.get("transport_type", "CAN")
+        if transport_type == "CAN":
+            # Return a CAN transport object
+            return CANTransport()
+        elif transport_type == "TCP":
+            # Return a TCP transport object
+            return TCPTransport(self.config.get("tcp_address"), self.config.get("tcp_port"))
+        else:
+            raise ValueError(f"Unsupported transport type: {transport_type}")
+
+        # Initialize VehicleSignalInterface for the vendor
+        try:
+            self.vehicle_signal_interface = VehicleSignalInterface(
+                vendor=vendor, preference=preference, attached_electronics=attached_electronics
+            )
+            logger.info(f"VehicleSignalInterface initialized for {vendor}.")
+        except Exception as e:
+            logger.error(f"Failed to initialize VehicleSignalInterface for {vendor}: {e}")
+            self.vehicle_signal_interface = None
+
+        # Load available signals
+        self.available_signals = self.load_available_signals()
+        self.uds_handler = UDSHandler(transport_layer=self.setup_transport(), config=config["uds"])
 
     @property
     def config(self):

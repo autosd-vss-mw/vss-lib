@@ -13,7 +13,7 @@ ExecStart=/usr/lib/vss-lib/dbus/container_dbus_service
 ExecStop=/bin/bash -c 'sudo podman stop $(sudo podman ps -q --filter "name=vss_container") -t0'
 
 # Automatically restart the service if it stops unexpectedly
-Restart=yes
+Restart=always
 
 # Run the service as root
 User=root

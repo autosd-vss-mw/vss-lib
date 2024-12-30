@@ -60,6 +60,14 @@ def get_vspec_file(vendor):
         print(f"VSS file not found for vendor: {vendor}")
         return None
 
+def load_config(vendor):
+    try:
+        config = toml.load("/etc/vss-lib/vss.config")
+        return config.get(vendor, {})
+    except FileNotFoundError:
+        raise FileNotFoundError("Configuration file not found.")
+    except Exception as e:
+        raise RuntimeError(f"Failed to load configuration: {e}")
 
 def load_vspec_file(vspec_file_path):
     """
